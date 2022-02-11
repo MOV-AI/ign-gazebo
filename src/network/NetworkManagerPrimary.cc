@@ -33,6 +33,7 @@
 
 #include "ignition/gazebo/components/Model.hh"
 #include "ignition/gazebo/components/Name.hh"
+#include "ignition/gazebo/components/Sensor.hh"
 #include "ignition/gazebo/components/PerformerAffinity.hh"
 #include "ignition/gazebo/components/PerformerLevels.hh"
 #include "ignition/gazebo/Conversions.hh"
