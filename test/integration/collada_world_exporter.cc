@@ -17,8 +17,12 @@
 
 #include <gtest/gtest.h>
 
+#include <ignition/common/ColladaLoader.hh>
 #include <ignition/common/Console.hh>
 #include <ignition/common/Filesystem.hh>
+#include <ignition/common/Mesh.hh>
+#include <ignition/common/SubMesh.hh>
+#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "ignition/gazebo/Server.hh"
 #include "ignition/gazebo/test_config.hh"
@@ -47,7 +51,9 @@ class ColladaWorldExporterFixture : public InternalFixture<::testing::Test>
 };
 
 /////////////////////////////////////////////////
-TEST_F(ColladaWorldExporterFixture, ExportWorld)
+// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
+TEST_F(ColladaWorldExporterFixture,
+       IGN_UTILS_TEST_DISABLED_ON_WIN32(ExportWorld))
 {
   this->LoadWorld(common::joinPaths("test", "worlds",
         "collada_world_exporter.sdf"));
@@ -68,11 +74,14 @@ TEST_F(ColladaWorldExporterFixture, ExportWorld)
   common::removeAll("./collada_world_exporter_box_test");
 }
 
-TEST_F(ColladaWorldExporterFixture, ExportWorldFromFuelWithSubmesh)
+TEST_F(ColladaWorldExporterFixture,
+       IGN_UTILS_TEST_DISABLED_ON_WIN32(ExportWorldFromFuelWithSubmesh))
 {
+  std::string world_path =
+    ignition::common::joinPaths(PROJECT_SOURCE_PATH, "test", "worlds");
   ignition::common::setenv("IGN_GAZEBO_RESOURCE_PATH",
-    (std::string(PROJECT_SOURCE_PATH) + "/test/worlds:" +
-    std::string(PROJECT_SOURCE_PATH) + "/test/worlds/models").c_str());
+    (world_path + ":" +
+    ignition::common::joinPaths(world_path, "models")).c_str());
 
   this->LoadWorld(common::joinPaths("test", "worlds",
         "collada_world_exporter_submesh.sdf"));
@@ -91,8 +100,77 @@ TEST_F(ColladaWorldExporterFixture, ExportWorldFromFuelWithSubmesh)
   // The export directory should now exist.
   EXPECT_TRUE(common::exists(outputPath));
 
+  // Original .dae file has two submeshes
+  // .sdf loads them together and a submesh alone
+  // Check that output has three nodes
+  common::ColladaLoader loader;
+  const common::Mesh *meshExported = loader.Load(common::joinPaths(
+      outputPath, "meshes", "collada_world_exporter_submesh_test.dae"));
+  EXPECT_EQ(3u, meshExported->SubMeshCount());
+
   // Cleanup
   common::removeAll(outputPath);
+}
+
+TEST_F(ColladaWorldExporterFixture,
+       IGN_UTILS_TEST_DISABLED_ON_WIN32(ExportWorldMadeFromObj))
+{
+  std::string world_path =
+    ignition::common::joinPaths(PROJECT_SOURCE_PATH, "test", "worlds");
+  ignition::common::setenv("IGN_GAZEBO_RESOURCE_PATH",
+    (world_path + ":" +
+    ignition::common::joinPaths(world_path, "models")).c_str());
+
+  this->LoadWorld(common::joinPaths("test", "worlds",
+        "office.sdf"));
+
+  const std::string outputPath = "./office_world";
+  const std::string outputPathTextures =
+    common::joinPaths(outputPath, "materials", "textures");
+  const std::string outputPathTexture1 =
+    common::joinPaths(outputPathTextures, "default.png");
+  const std::string outputPathTexture2 =
+    common::joinPaths(outputPathTextures, "blue_linoleum.png");
+
+  // Cleanup
+  common::removeAll(outputPath);
+
+  // The export directory shouldn't exist.
+  EXPECT_FALSE(common::exists(outputPath));
+
+  // Run one iteration which should export the world.
+  server->Run(true, 1, false);
+
+  // The export directory and corresponding textures should now exist.
+  EXPECT_TRUE(common::exists(outputPath));
+  EXPECT_TRUE(common::exists(outputPathTextures));
+  EXPECT_TRUE(common::exists(outputPathTexture1));
+  EXPECT_TRUE(common::exists(outputPathTexture2));
+
+  // Cleanup
+  common::removeAll(outputPath);
+}
+
+TEST_F(ColladaWorldExporterFixture,
+       IGN_UTILS_TEST_DISABLED_ON_WIN32(ExportWorldWithLights))
+{
+  this->LoadWorld(common::joinPaths("test", "worlds",
+        "collada_world_exporter_lights.sdf"));
+
+  // Cleanup
+  common::removeAll("./collada_world_exporter_lights_test");
+
+  // The export directory shouldn't exist.
+  EXPECT_FALSE(common::exists("./collada_world_exporter_lights_test"));
+
+  // Run one iteration which should export the world.
+  server->Run(true, 1, false);
+
+  // The export directory should now exist.
+  EXPECT_TRUE(common::exists("./collada_world_exporter_lights_test"));
+
+  // Cleanup
+  common::removeAll("./collada_world_exporter_lights_test");
 }
 
 /////////////////////////////////////////////////

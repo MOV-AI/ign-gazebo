@@ -220,11 +220,11 @@ class ignition::gazebo::ServerConfigPrivate
   public: explicit ServerConfigPrivate(
               const std::unique_ptr<ServerConfigPrivate> &_cfg)
           : sdfFile(_cfg->sdfFile),
+            sdfString(_cfg->sdfString),
             updateRate(_cfg->updateRate),
             useLevels(_cfg->useLevels),
             useLogRecord(_cfg->useLogRecord),
             logRecordPath(_cfg->logRecordPath),
-            logIgnoreSdfPath(_cfg->logIgnoreSdfPath),
             logPlaybackPath(_cfg->logPlaybackPath),
             logRecordResources(_cfg->logRecordResources),
             logRecordCompressPath(_cfg->logRecordCompressPath),
@@ -237,7 +237,8 @@ class ignition::gazebo::ServerConfigPrivate
             networkSecondaries(_cfg->networkSecondaries),
             networkType(_cfg->networkType),
             seed(_cfg->seed),
-            logRecordTopics(_cfg->logRecordTopics) { }
+            logRecordTopics(_cfg->logRecordTopics),
+            isHeadlessRendering(_cfg->isHeadlessRendering) { }
 
   // \brief The SDF file that the server should load
   public: std::string sdfFile = "";
@@ -256,10 +257,6 @@ class ignition::gazebo::ServerConfigPrivate
 
   /// \brief Path to place recorded states
   public: std::string logRecordPath = "";
-
-  /// TODO(anyone) Deprecate in public APIs in Ignition-D, remove in Ignition-E
-  /// \brief Whether log record path is specified from command line
-  public: bool logIgnoreSdfPath{false};
 
   /// \brief Path to recorded states to play back using logging system
   public: std::string logPlaybackPath = "";
@@ -305,6 +302,9 @@ class ignition::gazebo::ServerConfigPrivate
 
   /// \brief Topics to record.
   public: std::vector<std::string> logRecordTopics;
+
+  /// \brief is the headless mode active.
+  public: bool isHeadlessRendering{false};
 };
 
 //////////////////////////////////////////////////
@@ -458,18 +458,6 @@ void ServerConfig::SetLogRecordPath(const std::string &_recordPath)
 }
 
 /////////////////////////////////////////////////
-bool ServerConfig::LogIgnoreSdfPath() const
-{
-  return this->dataPtr->logIgnoreSdfPath;
-}
-
-/////////////////////////////////////////////////
-void ServerConfig::SetLogIgnoreSdfPath(bool _ignore)
-{
-  this->dataPtr->logIgnoreSdfPath = _ignore;
-}
-
-/////////////////////////////////////////////////
 const std::string ServerConfig::LogPlaybackPath() const
 {
   return this->dataPtr->logPlaybackPath;
@@ -552,6 +540,18 @@ const std::string &ServerConfig::RenderEngineServer() const
 void ServerConfig::SetRenderEngineServer(const std::string &_renderEngineServer)
 {
   this->dataPtr->renderEngineServer = _renderEngineServer;
+}
+
+/////////////////////////////////////////////////
+void ServerConfig::SetHeadlessRendering(const bool _headless)
+{
+  this->dataPtr->isHeadlessRendering = _headless;
+}
+
+/////////////////////////////////////////////////
+bool ServerConfig::HeadlessRendering() const
+{
+  return this->dataPtr->isHeadlessRendering;
 }
 
 /////////////////////////////////////////////////
@@ -894,7 +894,7 @@ ignition::gazebo::loadPluginInfo(bool _isPlayback)
   std::string defaultConfigDir;
   ignition::common::env(IGN_HOMEDIR, defaultConfigDir);
   defaultConfigDir = ignition::common::joinPaths(defaultConfigDir, ".ignition",
-    "gazebo");
+    "gazebo", IGNITION_GAZEBO_MAJOR_VERSION_STR);
 
   auto defaultConfig = ignition::common::joinPaths(defaultConfigDir,
       configFilename);
@@ -949,4 +949,3 @@ ignition::gazebo::loadPluginInfo(bool _isPlayback)
 
   return ret;
 }
-

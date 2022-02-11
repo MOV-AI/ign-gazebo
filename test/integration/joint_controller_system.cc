@@ -22,6 +22,7 @@
 #include <ignition/common/Console.hh>
 #include <ignition/common/Util.hh>
 #include <ignition/transport/Node.hh>
+#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "ignition/gazebo/components/AngularVelocity.hh"
 #include "ignition/gazebo/components/Link.hh"
@@ -46,7 +47,9 @@ class JointControllerTestFixture : public InternalFixture<::testing::Test>
 
 /////////////////////////////////////////////////
 // Tests that the JointController accepts joint velocity commands
-TEST_F(JointControllerTestFixture, JointVelocityCommand)
+// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
+TEST_F(JointControllerTestFixture,
+       IGN_UTILS_TEST_DISABLED_ON_WIN32(JointVelocityCommand))
 {
   using namespace std::chrono_literals;
 
@@ -143,7 +146,8 @@ TEST_F(JointControllerTestFixture, JointVelocityCommand)
 
 /////////////////////////////////////////////////
 // Tests the JointController using joint force commands
-TEST_F(JointControllerTestFixture, JointVelocityCommandWithForce)
+TEST_F(JointControllerTestFixture,
+       IGN_UTILS_TEST_DISABLED_ON_WIN32(JointVelocityCommandWithForce))
 {
   using namespace std::chrono_literals;
 
@@ -217,4 +221,23 @@ TEST_F(JointControllerTestFixture, JointVelocityCommandWithForce)
   EXPECT_NEAR(0, angularVelocity.X(), 1e-2);
   EXPECT_NEAR(0, angularVelocity.Y(), 1e-2);
   EXPECT_NEAR(testAngVel, angularVelocity.Z(), 1e-2);
+}
+
+/////////////////////////////////////////////////
+TEST_F(JointControllerTestFixture, InexistentJoint)
+{
+  using namespace std::chrono_literals;
+
+  // Start server
+  ServerConfig serverConfig;
+  const auto sdfFile = common::joinPaths(std::string(PROJECT_SOURCE_PATH),
+    "test", "worlds", "joint_controller_invalid.sdf");
+  serverConfig.SetSdfFile(sdfFile);
+
+  Server server(serverConfig);
+  EXPECT_FALSE(server.Running());
+  EXPECT_FALSE(*server.Running(0));
+
+  // Run some iterations to make sure nothing explodes
+  server.Run(true, 100, false);
 }

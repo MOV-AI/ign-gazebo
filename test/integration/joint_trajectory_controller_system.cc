@@ -20,8 +20,12 @@
 #include <ignition/msgs/float.pb.h>
 #include <ignition/msgs/joint_trajectory.pb.h>
 
+#include <array>
+
 #include <ignition/common/Console.hh>
+#include <ignition/common/Util.hh>
 #include <ignition/transport/Node.hh>
+#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "ignition/gazebo/components/Joint.hh"
 #include "ignition/gazebo/components/JointPosition.hh"
@@ -49,8 +53,9 @@ class JointTrajectoryControllerTestFixture
 /////////////////////////////////////////////////
 // Tests that JointTrajectoryController accepts position-controlled joint
 // trajectory
+// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
 TEST_F(JointTrajectoryControllerTestFixture,
-       JointTrajectoryControllerPositionControl)
+    IGN_UTILS_TEST_DISABLED_ON_WIN32(JointTrajectoryControllerPositionControl))
 {
   using namespace std::chrono_literals;
 
@@ -226,7 +231,7 @@ TEST_F(JointTrajectoryControllerTestFixture,
 // Tests that JointTrajectoryController accepts velocity-controlled joint
 // trajectory
 TEST_F(JointTrajectoryControllerTestFixture,
-       JointTrajectoryControllerVelocityControl)
+    IGN_UTILS_TEST_DISABLED_ON_WIN32(JointTrajectoryControllerVelocityControl))
 {
   using namespace std::chrono_literals;
 

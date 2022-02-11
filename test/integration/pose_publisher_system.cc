@@ -22,6 +22,7 @@
 #include <ignition/common/Util.hh>
 #include <ignition/math/Pose3.hh>
 #include <ignition/transport/Node.hh>
+#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "ignition/gazebo/components/Name.hh"
 #include "ignition/gazebo/components/Model.hh"
@@ -98,7 +99,8 @@ std::string addDelimiter(const std::vector<std::string> &_name,
 }
 
 /////////////////////////////////////////////////
-TEST_F(PosePublisherTest, PublishCmd)
+// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
+TEST_F(PosePublisherTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(PublishCmd))
 {
   // Start server
   ServerConfig serverConfig;
@@ -320,7 +322,7 @@ TEST_F(PosePublisherTest, PublishCmd)
 }
 
 /////////////////////////////////////////////////
-TEST_F(PosePublisherTest, UpdateFrequency)
+TEST_F(PosePublisherTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(UpdateFrequency))
 {
   // Start server
   ServerConfig serverConfig;
@@ -350,9 +352,9 @@ TEST_F(PosePublisherTest, UpdateFrequency)
   std::size_t nExpMessages = 100;
   // Wait for 100 messages to be received
   bool received = false;
-  for (int sleep = 0; sleep < 300; ++sleep)
+  for (int sleep = 0; sleep < 30; ++sleep)
   {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     {
       std::lock_guard<std::mutex> lock(mutex);
@@ -385,7 +387,7 @@ TEST_F(PosePublisherTest, UpdateFrequency)
 }
 
 /////////////////////////////////////////////////
-TEST_F(PosePublisherTest, StaticPosePublisher)
+TEST_F(PosePublisherTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(StaticPosePublisher))
 {
   // Start server
   ServerConfig serverConfig;
@@ -641,7 +643,8 @@ TEST_F(PosePublisherTest, StaticPosePublisher)
 }
 
 /////////////////////////////////////////////////
-TEST_F(PosePublisherTest, StaticPoseUpdateFrequency)
+TEST_F(PosePublisherTest,
+       IGN_UTILS_TEST_DISABLED_ON_WIN32(StaticPoseUpdateFrequency))
 {
   // Start server
   ServerConfig serverConfig;
@@ -672,9 +675,9 @@ TEST_F(PosePublisherTest, StaticPoseUpdateFrequency)
   std::size_t nExpMessages = 100;
   // Wait for 100 messages to be received
   bool received = false;
-  for (int sleep = 0; sleep < 300; ++sleep)
+  for (int sleep = 0; sleep < 30; ++sleep)
   {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     {
       std::lock_guard<std::mutex> lock(mutex);
@@ -708,7 +711,8 @@ TEST_F(PosePublisherTest, StaticPoseUpdateFrequency)
 }
 
 /////////////////////////////////////////////////
-TEST_F(PosePublisherTest, NestedModelLoadPlugin)
+TEST_F(PosePublisherTest,
+       IGN_UTILS_TEST_DISABLED_ON_WIN32(NestedModelLoadPlugin))
 {
   // Start server
   ServerConfig serverConfig;
@@ -732,9 +736,9 @@ TEST_F(PosePublisherTest, NestedModelLoadPlugin)
 
   // Wait for messages to be received
   int sleep = 0;
-  while (poseMsgs.empty() && sleep++ < 300)
+  while (poseMsgs.empty() && sleep++ < 30)
   {
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
   }
 
   EXPECT_TRUE(!poseMsgs.empty());

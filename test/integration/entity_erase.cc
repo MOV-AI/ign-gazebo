@@ -17,6 +17,10 @@
 
 #include <gtest/gtest.h>
 
+#include <optional>
+
+#include <ignition/utilities/ExtraTestMacros.hh>
+
 #include "ignition/gazebo/Server.hh"
 #include "ignition/gazebo/test_config.hh"  // NOLINT(build/include)
 #include "../helpers/EnvTestFixture.hh"
@@ -30,7 +34,9 @@ class PhysicsSystemFixture : public InternalFixture<::testing::Test>
 };
 
 /////////////////////////////////////////////////
-TEST_F(PhysicsSystemFixture, CreatePhysicsWorld)
+// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
+TEST_F(PhysicsSystemFixture,
+       IGN_UTILS_TEST_DISABLED_ON_WIN32(CreatePhysicsWorld))
 {
   ignition::gazebo::ServerConfig serverConfig;
 
@@ -39,7 +45,9 @@ TEST_F(PhysicsSystemFixture, CreatePhysicsWorld)
 
   gazebo::Server server(serverConfig);
   EXPECT_TRUE(server.HasEntity("box"));
+  EXPECT_TRUE(server.HasEntity("capsule"));
   EXPECT_TRUE(server.HasEntity("cylinder"));
+  EXPECT_TRUE(server.HasEntity("ellipsoid"));
   EXPECT_TRUE(server.HasEntity("sphere"));
   server.SetUpdatePeriod(1ns);
 
@@ -47,18 +55,24 @@ TEST_F(PhysicsSystemFixture, CreatePhysicsWorld)
   EXPECT_TRUE(server.RequestRemoveEntity("box"));
   // Nothing changes because the server has not been stepped.
   EXPECT_TRUE(server.HasEntity("box"));
+  EXPECT_TRUE(server.HasEntity("capsule"));
   EXPECT_TRUE(server.HasEntity("cylinder"));
+  EXPECT_TRUE(server.HasEntity("ellipsoid"));
   EXPECT_TRUE(server.HasEntity("sphere"));
   // Take one step and the entity should be removed.
   server.Run(true, 1, false);
   EXPECT_FALSE(server.HasEntity("box"));
+  EXPECT_TRUE(server.HasEntity("capsule"));
   EXPECT_TRUE(server.HasEntity("cylinder"));
+  EXPECT_TRUE(server.HasEntity("ellipsoid"));
   EXPECT_TRUE(server.HasEntity("sphere"));
 
   EXPECT_TRUE(server.RequestRemoveEntity("cylinder"));
   server.Run(true, 1, false);
   EXPECT_FALSE(server.HasEntity("box"));
   EXPECT_FALSE(server.HasEntity("cylinder"));
+  EXPECT_TRUE(server.HasEntity("capsule"));
+  EXPECT_TRUE(server.HasEntity("ellipsoid"));
   std::optional<Entity> entity = server.EntityByName("sphere");
   EXPECT_NE(std::nullopt, entity);
   EXPECT_TRUE(server.RequestRemoveEntity(*entity));
@@ -66,5 +80,7 @@ TEST_F(PhysicsSystemFixture, CreatePhysicsWorld)
   server.Run(true, 1, false);
   EXPECT_FALSE(server.HasEntity("box"));
   EXPECT_FALSE(server.HasEntity("cylinder"));
+  EXPECT_TRUE(server.HasEntity("capsule"));
+  EXPECT_TRUE(server.HasEntity("ellipsoid"));
   EXPECT_FALSE(server.HasEntity("sphere"));
 }
