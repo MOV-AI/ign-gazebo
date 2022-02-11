@@ -405,23 +405,22 @@ void NetworkManagerPrimary::PopulateRenderingModels(
 
   auto secondaryIt = this->secondaries.begin();
 
-  // Go through models and assign a different secondary to each
-  this->dataPtr->ecm->Each<components::Model, components::Name>(
-    [&](const Entity &_entity, const components::Model *,
-        const components::Name *_name) -> bool
-    {
-      this->SetAffinity(_entity, secondaryIt->second->prefix,
-          _msg.add_affinity());
-
-      // Round-robin levels
-      secondaryIt++;
-      if (secondaryIt == this->secondaries.end())
+  // Go through sensors and assign a different secondary to each
+  this->dataPtr->ecm->Each<components::Sensor>(
+      [&](const Entity &_entity, const components::Sensor *) -> bool
       {
-        secondaryIt = this->secondaries.begin();
-      }
+        this->SetAffinity(_entity, secondaryIt->second->prefix,
+                          _msg.add_affinity());
 
-      return true;
-    });
+        // Round-robin levels
+        secondaryIt++;
+        if (secondaryIt == this->secondaries.end())
+        {
+          secondaryIt = this->secondaries.begin();
+        }
+
+        return true;
+      });
 }
 
 //////////////////////////////////////////////////
