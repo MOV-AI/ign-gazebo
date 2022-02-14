@@ -5,7 +5,7 @@
 
 For each model, it is possible to get information about its
  -  Pose: Pose of the model
- -  Links: Pose, mass, and inertial matrix of the link and attached sensors
+ -  Links: Pose, mass, and inertial matrix of the link
  -  Joints: Parent link, child link and joint type.
 
 ## Example running the diff_drive world

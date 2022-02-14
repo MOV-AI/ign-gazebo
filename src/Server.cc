@@ -15,8 +15,6 @@
  *
 */
 
-#include <numeric>
-
 #include <ignition/common/SystemPaths.hh>
 #include <ignition/fuel_tools/Interface.hh>
 #include <ignition/fuel_tools/ClientConfig.hh>

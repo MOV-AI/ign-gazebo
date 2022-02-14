@@ -17,10 +17,8 @@
 
 #include <gtest/gtest.h>
 #include <ignition/common/Console.hh>
-#include <ignition/common/Util.hh>
 #include <ignition/math/Pose3.hh>
 #include <ignition/transport/Node.hh>
-#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "ignition/gazebo/components/Name.hh"
 #include "ignition/gazebo/components/Model.hh"
@@ -194,8 +192,7 @@ class AckermannSteeringTest
 };
 
 /////////////////////////////////////////////////
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_P(AckermannSteeringTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(PublishCmd))
+TEST_P(AckermannSteeringTest, PublishCmd)
 {
   TestPublishCmd(common::joinPaths(std::string(PROJECT_SOURCE_PATH),
                                    "/test/worlds/ackermann_steering.sdf"),
@@ -203,8 +200,7 @@ TEST_P(AckermannSteeringTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(PublishCmd))
 }
 
 /////////////////////////////////////////////////
-TEST_P(AckermannSteeringTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(PublishCmdCustomTopics))
+TEST_P(AckermannSteeringTest, PublishCmdCustomTopics)
 {
   TestPublishCmd(common::joinPaths(std::string(PROJECT_SOURCE_PATH),
       "/test/worlds/ackermann_steering_custom_topics.sdf"),
@@ -212,7 +208,7 @@ TEST_P(AckermannSteeringTest,
 }
 
 /////////////////////////////////////////////////
-TEST_P(AckermannSteeringTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(SkidPublishCmd))
+TEST_P(AckermannSteeringTest, SkidPublishCmd)
 {
   // Start server
   ServerConfig serverConfig;
@@ -310,7 +306,7 @@ TEST_P(AckermannSteeringTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(SkidPublishCmd))
 }
 
 /////////////////////////////////////////////////
-TEST_P(AckermannSteeringTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(OdomFrameId))
+TEST_P(AckermannSteeringTest, OdomFrameId)
 {
   // Start server
   ServerConfig serverConfig;
@@ -368,8 +364,7 @@ TEST_P(AckermannSteeringTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(OdomFrameId))
 }
 
 /////////////////////////////////////////////////
-TEST_P(AckermannSteeringTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(OdomCustomFrameId))
+TEST_P(AckermannSteeringTest, OdomCustomFrameId)
 {
   // Start server
   ServerConfig serverConfig;

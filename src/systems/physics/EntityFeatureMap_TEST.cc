@@ -29,7 +29,6 @@
 #include <ignition/physics/RemoveEntities.hh>
 #include <ignition/physics/config.hh>
 #include <ignition/plugin/Loader.hh>
-#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "../../../test/helpers/EnvTestFixture.hh"
 #include "ignition/gazebo/EntityComponentManager.hh"
@@ -93,9 +92,7 @@ class EntityFeatureMapFixture: public InternalFixture<::testing::Test>
   public: EnginePtrType engine;
 };
 
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_F(EntityFeatureMapFixture,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(AddCastRemoveEntity))
+TEST_F(EntityFeatureMapFixture, AddCastRemoveEntity)
 {
   struct TestOptionalFeatures1
       : physics::FeatureList<physics::LinkFrameSemantics>
@@ -124,8 +121,8 @@ TEST_F(EntityFeatureMapFixture,
 
   testMap.AddEntity(gazeboWorld1Entity, testWorld1);
 
-  // After adding the entity, there should be one entry each in three maps
-  EXPECT_EQ(3u, testMap.TotalMapEntryCount());
+  // After adding the entity, there should be one entry each in two maps
+  EXPECT_EQ(2u, testMap.TotalMapEntryCount());
   EXPECT_EQ(testWorld1, testMap.Get(gazeboWorld1Entity));
   EXPECT_EQ(gazeboWorld1Entity, testMap.Get(testWorld1));
 
@@ -134,7 +131,7 @@ TEST_F(EntityFeatureMapFixture,
       testMap.EntityCast<TestOptionalFeatures1>(gazeboWorld1Entity);
   ASSERT_NE(nullptr, testWorld1Feature1);
   // After the cast, there should be one more entry in the cache map.
-  EXPECT_EQ(4u, testMap.TotalMapEntryCount());
+  EXPECT_EQ(3u, testMap.TotalMapEntryCount());
 
   // Cast to optional feature2
   auto testWorld1Feature2 =
@@ -142,12 +139,12 @@ TEST_F(EntityFeatureMapFixture,
   ASSERT_NE(nullptr, testWorld1Feature2);
   // After the cast, the number of entries should remain the same because we
   // have not added an entity.
-  EXPECT_EQ(4u, testMap.TotalMapEntryCount());
+  EXPECT_EQ(3u, testMap.TotalMapEntryCount());
 
   // Add another entity
   WorldPtrType testWorld2 = this->engine->ConstructEmptyWorld("world2");
   testMap.AddEntity(gazeboWorld2Entity, testWorld2);
-  EXPECT_EQ(7u, testMap.TotalMapEntryCount());
+  EXPECT_EQ(5u, testMap.TotalMapEntryCount());
   EXPECT_EQ(testWorld2, testMap.Get(gazeboWorld2Entity));
   EXPECT_EQ(gazeboWorld2Entity, testMap.Get(testWorld2));
 
@@ -155,21 +152,21 @@ TEST_F(EntityFeatureMapFixture,
       testMap.EntityCast<TestOptionalFeatures1>(testWorld2);
   ASSERT_NE(nullptr, testWorld2Feature1);
   // After the cast, there should be one more entry in the cache map.
-  EXPECT_EQ(8u, testMap.TotalMapEntryCount());
+  EXPECT_EQ(6u, testMap.TotalMapEntryCount());
 
   auto testWorld2Feature2 =
       testMap.EntityCast<TestOptionalFeatures2>(testWorld2);
   ASSERT_NE(nullptr, testWorld2Feature2);
   // After the cast, the number of entries should remain the same because we
   // have not added an entity.
-  EXPECT_EQ(8u, testMap.TotalMapEntryCount());
+  EXPECT_EQ(6u, testMap.TotalMapEntryCount());
 
   // Remove entitites
   testMap.Remove(gazeboWorld1Entity);
   EXPECT_FALSE(testMap.HasEntity(gazeboWorld1Entity));
   EXPECT_EQ(nullptr, testMap.Get(gazeboWorld1Entity));
   EXPECT_EQ(gazebo::kNullEntity, testMap.Get(testWorld1));
-  EXPECT_EQ(4u, testMap.TotalMapEntryCount());
+  EXPECT_EQ(3u, testMap.TotalMapEntryCount());
 
   testMap.Remove(testWorld2);
   EXPECT_FALSE(testMap.HasEntity(gazeboWorld2Entity));

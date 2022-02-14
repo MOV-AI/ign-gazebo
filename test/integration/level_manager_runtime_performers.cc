@@ -26,7 +26,6 @@
 #include <ignition/common/Console.hh>
 #include <ignition/common/Util.hh>
 #include <ignition/transport/Node.hh>
-#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "ignition/gazebo/Server.hh"
 #include "ignition/gazebo/SystemLoader.hh"
@@ -207,8 +206,7 @@ class LevelManagerFixture : public InternalFixture<::testing::Test>
 
 /////////////////////////////////////////////////
 /// Check default level includes entities not included by other levels
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_F(LevelManagerFixture, IGN_UTILS_TEST_DISABLED_ON_WIN32(DefaultLevel))
+TEST_F(LevelManagerFixture, DefaultLevel)
 {
   std::vector<std::set<std::string>> levelEntityNamesList;
 
@@ -254,7 +252,7 @@ TEST_F(LevelManagerFixture, IGN_UTILS_TEST_DISABLED_ON_WIN32(DefaultLevel))
 ///////////////////////////////////////////////
 /// Check a level is loaded when a performer is inside a level
 /// Check a level is unloaded when a performer is outside a level
-TEST_F(LevelManagerFixture, IGN_UTILS_TEST_DISABLED_ON_WIN32(LevelLoadUnload))
+TEST_F(LevelManagerFixture, LevelLoadUnload)
 {
   ModelMover perf1(*this->server->EntityByName("sphere"));
   this->server->AddSystem(perf1.systemPtr);
@@ -304,7 +302,7 @@ TEST_F(LevelManagerFixture, IGN_UTILS_TEST_DISABLED_ON_WIN32(LevelLoadUnload))
 
 ///////////////////////////////////////////////
 /// Check behaviour of level buffers
-TEST_F(LevelManagerFixture, IGN_UTILS_TEST_DISABLED_ON_WIN32(LevelBuffers))
+TEST_F(LevelManagerFixture, LevelBuffers)
 {
   ModelMover perf1(*this->server->EntityByName("sphere"));
   this->server->AddSystem(perf1.systemPtr);
@@ -342,8 +340,7 @@ TEST_F(LevelManagerFixture, IGN_UTILS_TEST_DISABLED_ON_WIN32(LevelBuffers))
 
 ///////////////////////////////////////////////
 /// Check that multiple performers can load/unload multiple levels independently
-TEST_F(LevelManagerFixture,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(LevelsWithMultiplePerformers))
+TEST_F(LevelManagerFixture, LevelsWithMultiplePerformers)
 {
   ModelMover perf1(*this->server->EntityByName("sphere"));
   ModelMover perf2(*this->server->EntityByName("box"));
@@ -460,8 +457,7 @@ TEST_F(LevelManagerFixture,
 
 ///////////////////////////////////////////////
 /// Check that buffers work properly with multiple performers
-TEST_F(LevelManagerFixture,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(LevelBuffersWithMultiplePerformers))
+TEST_F(LevelManagerFixture, LevelBuffersWithMultiplePerformers)
 {
   ModelMover perf1(*this->server->EntityByName("sphere"));
   ModelMover perf2(*this->server->EntityByName("box"));

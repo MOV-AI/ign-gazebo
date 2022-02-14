@@ -37,18 +37,6 @@ Item {
       text: "Remove"
       onTriggered: context.OnRemove(context.entity, context.type)
     }
-    MenuItem {
-      id: copyMenu
-      text: "Copy"
-      onTriggered: context.OnRequest("copy", context.entity)
-    }
-    MenuItem {
-      id: pasteMenu
-      text: "Paste"
-      // no data needs to be passed along to the paste request, so an empty
-      // string is sent
-      onTriggered: context.OnRequest("paste", "")
-    }
     //   // cascading submenu only works in Qt 5.10+ on focal
     //   Menu {
     //     id: viewSubmenu
@@ -76,59 +64,11 @@ Item {
     x: menu.x + menu.width
     y: menu.y + viewSubmenu.y
     MenuItem {
-      id: viewCOMMenu
-      text: "Center of Mass"
-      onTriggered: {
-        menu.close()
-        context.OnRequest("view_com", context.entity)
-      }
-    }
-    MenuItem {
       id: viewCollisionsMenu
       text: "Collisions"
       onTriggered: {
         menu.close()
         context.OnRequest("view_collisions", context.entity)
-      }
-    }
-    MenuItem {
-      id: viewInertiaMenu
-      text: "Inertia"
-      onTriggered: {
-        menu.close()
-        context.OnRequest("view_inertia", context.entity)
-      }
-    }
-    MenuItem {
-      id: viewJointsMenu
-      text: "Joints"
-      onTriggered: {
-        menu.close()
-        context.OnRequest("view_joints", context.entity)
-      }
-    }
-    MenuItem {
-      id: viewFramesMenu
-      text: "Frames"
-      onTriggered: {
-        menu.close()
-        context.OnRequest("view_frames", context.entity)
-      }
-    }
-    MenuItem {
-      id: viewTransparentMenu
-      text: "Transparent"
-      onTriggered: {
-        menu.close()
-        context.OnRequest("view_transparent", context.entity)
-      }
-    }
-    MenuItem {
-      id: viewWireframesMenu
-      text: "Wireframe"
-      onTriggered: {
-        menu.close()
-        context.OnRequest("view_wireframes", context.entity)
       }
     }
   }
@@ -141,13 +81,7 @@ Item {
     moveToMenu.enabled = false
     followMenu.enabled = false
     removeMenu.enabled = false
-    viewTransparentMenu.enabled = false;
-    viewCOMMenu.enabled = false;
-    viewInertiaMenu.enabled = false;
-    viewJointsMenu.enabled = false;
-    viewWireframesMenu.enabled = false;
     viewCollisionsMenu.enabled = false;
-    viewFramesMenu.enabled = false;
 
     // enable / disable menu items
     if (context.type == "model" || context.type == "link" ||
@@ -165,23 +99,7 @@ Item {
 
     if (context.type == "model" || context.type == "link")
     {
-      viewTransparentMenu.enabled = true;
-      viewCOMMenu.enabled = true;
-      viewInertiaMenu.enabled = true;
-      viewWireframesMenu.enabled = true;
       viewCollisionsMenu.enabled = true;
-    }
-
-    if (context.type == "model")
-    {
-      viewJointsMenu.enabled = true;
-    }
-
-    // TODO(chapulina) Support collision, sensor, etc.
-    if (context.type == "model" || context.type == "link" ||
-        context.type == "visual")
-    {
-      viewFramesMenu.enabled = true
     }
 
     menu.open()

@@ -55,8 +55,7 @@ std::string customExecStr(std::string _cmd)
 }
 
 /////////////////////////////////////////////////
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST(CmdLine, IGN_UTILS_TEST_DISABLED_ON_WIN32(Server))
+TEST(CmdLine, Server)
 {
   std::string cmd = kIgnCommand + " -r -v 4 --iterations 5 " +
     std::string(PROJECT_SOURCE_PATH) + "/test/worlds/plugins.sdf";
@@ -88,7 +87,7 @@ TEST(CmdLine, IGN_UTILS_TEST_DISABLED_ON_WIN32(Server))
 }
 
 /////////////////////////////////////////////////
-TEST(CmdLine, IGN_UTILS_TEST_DISABLED_ON_WIN32(CachedFuelWorld))
+TEST(CmdLine, CachedFuelWorld)
 {
   std::string projectPath = std::string(PROJECT_SOURCE_PATH) + "/test/worlds";
   ignition::common::setenv("IGN_FUEL_CACHE_PATH", projectPath.c_str());
@@ -102,7 +101,7 @@ TEST(CmdLine, IGN_UTILS_TEST_DISABLED_ON_WIN32(CachedFuelWorld))
 }
 
 /////////////////////////////////////////////////
-TEST(CmdLine, IGN_UTILS_TEST_DISABLED_ON_WIN32(GazeboServer))
+TEST(CmdLine, GazeboServer)
 {
   std::string cmd = kIgnCommand + " -r -v 4 --iterations 5 " +
     std::string(PROJECT_SOURCE_PATH) + "/test/worlds/plugins.sdf";
@@ -119,7 +118,7 @@ TEST(CmdLine, IGN_UTILS_TEST_DISABLED_ON_WIN32(GazeboServer))
 }
 
 /////////////////////////////////////////////////
-TEST(CmdLine, IGN_UTILS_TEST_DISABLED_ON_WIN32(Gazebo))
+TEST(CmdLine, Gazebo)
 {
   std::string cmd = kIgnCommand + " -r -v 4 --iterations 5 " +
     std::string(PROJECT_SOURCE_PATH) + "/test/worlds/plugins.sdf";
@@ -136,7 +135,7 @@ TEST(CmdLine, IGN_UTILS_TEST_DISABLED_ON_WIN32(Gazebo))
 }
 
 /////////////////////////////////////////////////
-TEST(CmdLine, IGN_UTILS_TEST_DISABLED_ON_WIN32(ResourcePath))
+TEST(CmdLine, ResourcePath)
 {
   std::string cmd = kIgnCommand + " -s -r -v 4 --iterations 1 plugins.sdf";
 

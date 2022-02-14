@@ -33,13 +33,12 @@
 #include <ignition/fuel_tools/ClientConfig.hh>
 #include <ignition/fuel_tools/FuelClient.hh>
 #include <ignition/gui/Application.hh>
-#include <ignition/gui/GuiEvents.hh>
 #include <ignition/gui/MainWindow.hh>
 #include <ignition/plugin/Register.hh>
 #include <ignition/transport/Node.hh>
 #include <ignition/transport/Publisher.hh>
 
-#include "ignition/gazebo/EntityComponentManager.hh"
+#include "ignition/gazebo/gui/GuiEvents.hh"
 
 namespace ignition::gazebo
 {
@@ -626,7 +625,7 @@ void ResourceSpawner::OnSortChosen(const QString &_sortType)
 /////////////////////////////////////////////////
 void ResourceSpawner::OnResourceSpawn(const QString &_sdfPath)
 {
-  ignition::gui::events::SpawnFromPath event(_sdfPath.toStdString());
+  gui::events::SpawnPreviewPath event(_sdfPath.toStdString());
   ignition::gui::App()->sendEvent(
       ignition::gui::App()->findChild<ignition::gui::MainWindow *>(),
       &event);

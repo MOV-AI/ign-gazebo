@@ -22,7 +22,6 @@
 
 #include <ignition/common/Console.hh>
 #include <ignition/common/Util.hh>
-#include <ignition/utilities/ExtraTestMacros.hh>
 #include <sdf/World.hh>
 
 #include "ignition/gazebo/components/Factory.hh"
@@ -45,9 +44,7 @@ class EachNewRemovedFixture : public InternalFixture<::testing::Test>
 };
 
 /////////////////////////////////////////////////
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_F(EachNewRemovedFixture,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(EachNewEachRemovedInSystem))
+TEST_F(EachNewRemovedFixture, EachNewEachRemovedInSystem)
 {
   ignition::gazebo::ServerConfig serverConfig;
 

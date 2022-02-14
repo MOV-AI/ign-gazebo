@@ -20,7 +20,7 @@
 
 #include <memory>
 
-#include <ignition/gazebo/gui/GuiSystem.hh>
+#include <ignition/gui/Plugin.hh>
 
 namespace ignition
 {
@@ -28,8 +28,8 @@ namespace gazebo
 {
   class VideoRecorderPrivate;
 
-  /// \brief Provides video recording cababilities to the 3D scene.
-  class VideoRecorder : public ignition::gazebo::GuiSystem
+  /// \brief Provides buttons for starting and stopping video recording
+  class VideoRecorder : public ignition::gui::Plugin
   {
     Q_OBJECT
 
@@ -41,13 +41,6 @@ namespace gazebo
 
     // Documentation inherited
     public: void LoadConfig(const tinyxml2::XMLElement *_pluginElem) override;
-
-    // Documentation inherited
-    public: void Update(const UpdateInfo &_info, EntityComponentManager &_ecm)
-      override;
-
-    // Documentation inherited
-    public: bool eventFilter(QObject *_obj, QEvent *_event) override;
 
     /// \brief Callback when video record start request is received
     /// \param[in] _format Video encoding format

@@ -50,14 +50,14 @@ NetworkConfig NetworkConfig::FromValues(const std::string &_role,
     else
     {
       config.role = NetworkRole::None;
-      ignwarn << "Invalid setting for network role: " << role
+      ignwarn << "Invalid setting for IGN_GAZEBO_NETWORK_ROLE: " << role
               << "(expected: PRIMARY, SECONDARY, READONLY)"
               << ", distributed sim disabled" << std::endl;
     }
   }
   else
   {
-      ignwarn << "Network role not set"
+      ignwarn << "IGN_GAZEBO_NETWORK_ROLE not set"
               << ", distributed sim disabled" << std::endl;
   }
 
@@ -68,8 +68,8 @@ NetworkConfig NetworkConfig::FromValues(const std::string &_role,
     if (config.numSecondariesExpected == 0)
     {
       config.role = NetworkRole::None;
-      ignwarn << "Detected network role as PRIMARY, but "
-        << "network secondaries not set, "
+      ignwarn << "Detected IGN_GAZEBO_NETWORK_ROLE=PRIMARY, but "
+        << "IGN_GAZEBO_NETWORK_SECONDARIES not set, "
         << "no distributed sim available" << std::endl;
     }
   }

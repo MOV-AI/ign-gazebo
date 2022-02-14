@@ -19,11 +19,7 @@
 
 #include <cstring>
 #include <map>
-#include <memory>
-#include <mutex>
-#include <optional>
 #include <set>
-#include <tuple>
 #include <type_traits>
 #include <utility>
 #include <vector>
@@ -84,24 +80,11 @@ auto CompareData = [](const DataType &_a, const DataType &_b) -> bool
 
 //////////////////////////////////////////////////
 template<typename ComponentTypeT>
-ComponentTypeT *EntityComponentManager::CreateComponent(const Entity _entity,
+ComponentKey EntityComponentManager::CreateComponent(const Entity _entity,
             const ComponentTypeT &_data)
 {
-  auto updateData = this->CreateComponentImplementation(_entity,
-      ComponentTypeT::typeId, &_data);
-  auto comp = this->Component<ComponentTypeT>(_entity);
-  if (updateData)
-  {
-    if (!comp)
-    {
-      ignerr << "Internal error. Failure to create a component of type "
-        << ComponentTypeT::typeId << " for entity " << _entity
-        << ". This should never happen!\n";
-      return comp;
-    }
-    *comp = _data;
-  }
-  return comp;
+  return this->CreateComponentImplementation(_entity, ComponentTypeT::typeId,
+      &_data);
 }
 
 //////////////////////////////////////////////////
@@ -133,7 +116,7 @@ const ComponentTypeT *EntityComponentManager::Component(
     const ComponentKey &_key) const
 {
   return static_cast<const ComponentTypeT *>(
-      this->ComponentImplementation(_key.second, _key.first));
+      this->ComponentImplementation(_key));
 }
 
 //////////////////////////////////////////////////
@@ -141,7 +124,7 @@ template<typename ComponentTypeT>
 ComponentTypeT *EntityComponentManager::Component(const ComponentKey &_key)
 {
   return static_cast<ComponentTypeT *>(
-      this->ComponentImplementation(_key.second, _key.first));
+      this->ComponentImplementation(_key));
 }
 
 //////////////////////////////////////////////////
@@ -190,18 +173,16 @@ bool EntityComponentManager::SetComponentData(const Entity _entity,
 template<typename ComponentTypeT>
 const ComponentTypeT *EntityComponentManager::First() const
 {
-  ignwarn << "EntityComponentManager::First is now deprecated and will always "
-    << "return nullptr.\n";
-  return nullptr;
+  return static_cast<const ComponentTypeT *>(
+      this->First(ComponentTypeT::typeId));
 }
 
 //////////////////////////////////////////////////
 template<typename ComponentTypeT>
 ComponentTypeT *EntityComponentManager::First()
 {
-  ignwarn << "EntityComponentManager::First is now deprecated and will always "
-    << "return nullptr.\n";
-  return nullptr;
+  return static_cast<ComponentTypeT *>(
+      this->First(ComponentTypeT::typeId));
 }
 
 //////////////////////////////////////////////////
@@ -214,7 +195,7 @@ Entity EntityComponentManager::EntityByComponents(
 
   // Iterate over entities
   Entity result{kNullEntity};
-  for (const Entity entity : view->Entities())
+  for (const Entity entity : view.entities)
   {
     bool different{false};
 
@@ -252,7 +233,7 @@ std::vector<Entity> EntityComponentManager::EntitiesByComponents(
 
   // Iterate over entities
   std::vector<Entity> result;
-  for (const Entity entity : view->Entities())
+  for (const Entity entity : view.entities)
   {
     bool different{false};
 
@@ -292,7 +273,7 @@ std::vector<Entity> EntityComponentManager::ChildrenByComponents(Entity _parent,
 
   // Iterate over entities
   std::vector<Entity> result;
-  for (const Entity entity : view->Entities())
+  for (const Entity entity : view.entities)
   {
     if (children.find(entity) == children.end())
     {
@@ -379,13 +360,13 @@ void EntityComponentManager::Each(typename identity<std::function<
 {
   // Get the view. This will create a new view if one does not already
   // exist.
-  auto view = this->FindView<ComponentTypeTs...>();
+  detail::View &view = this->FindView<ComponentTypeTs...>();
 
   // Iterate over the entities in the view, and invoke the callback
   // function.
-  for (const Entity entity : view->Entities())
+  for (const Entity entity : view.entities)
   {
-    if (!std::apply(_f, view->EntityComponentConstData(entity)))
+    if (!_f(entity, view.Component<ComponentTypeTs>(entity, this)...))
     {
       break;
     }
@@ -399,13 +380,13 @@ void EntityComponentManager::Each(typename identity<std::function<
 {
   // Get the view. This will create a new view if one does not already
   // exist.
-  auto view = this->FindView<ComponentTypeTs...>();
+  detail::View &view = this->FindView<ComponentTypeTs...>();
 
   // Iterate over the entities in the view, and invoke the callback
   // function.
-  for (const Entity entity : view->Entities())
+  for (const Entity entity : view.entities)
   {
-    if (!std::apply(_f, view->EntityComponentData(entity)))
+    if (!_f(entity, view.Component<ComponentTypeTs>(entity, this)...))
     {
       break;
     }
@@ -427,14 +408,14 @@ void EntityComponentManager::EachNew(typename identity<std::function<
 {
   // Get the view. This will create a new view if one does not already
   // exist.
-  auto view = this->FindView<ComponentTypeTs...>();
+  detail::View &view = this->FindView<ComponentTypeTs...>();
 
   // Iterate over the entities in the view and in the newly created
   // entities list, and invoke the callback
   // function.
-  for (const Entity entity : view->NewEntities())
+  for (const Entity entity : view.newEntities)
   {
-    if (!std::apply(_f, view->EntityComponentData(entity)))
+    if (!_f(entity, view.Component<ComponentTypeTs>(entity, this)...))
     {
       break;
     }
@@ -448,14 +429,14 @@ void EntityComponentManager::EachNew(typename identity<std::function<
 {
   // Get the view. This will create a new view if one does not already
   // exist.
-  auto view = this->FindView<ComponentTypeTs...>();
+  detail::View &view = this->FindView<ComponentTypeTs...>();
 
   // Iterate over the entities in the view and in the newly created
   // entities list, and invoke the callback
   // function.
-  for (const Entity entity : view->NewEntities())
+  for (const Entity entity : view.newEntities)
   {
-    if (!std::apply(_f, view->EntityComponentConstData(entity)))
+    if (!_f(entity, view.Component<ComponentTypeTs>(entity, this)...))
     {
       break;
     }
@@ -469,14 +450,14 @@ void EntityComponentManager::EachRemoved(typename identity<std::function<
 {
   // Get the view. This will create a new view if one does not already
   // exist.
-  auto view = this->FindView<ComponentTypeTs...>();
+  detail::View &view = this->FindView<ComponentTypeTs...>();
 
   // Iterate over the entities in the view and in the newly created
   // entities list, and invoke the callback
   // function.
-  for (const Entity entity : view->ToRemoveEntities())
+  for (const Entity entity : view.toRemoveEntities)
   {
-    if (!std::apply(_f, view->EntityComponentConstData(entity)))
+    if (!_f(entity, view.Component<ComponentTypeTs>(entity, this)...))
     {
       break;
     }
@@ -484,71 +465,93 @@ void EntityComponentManager::EachRemoved(typename identity<std::function<
 }
 
 //////////////////////////////////////////////////
-template<typename ...ComponentTypeTs>
-detail::View<ComponentTypeTs...> *EntityComponentManager::FindView() const
+template<typename FirstComponent,
+         typename ...RemainingComponents,
+         typename std::enable_if<
+           sizeof...(RemainingComponents) == 0, int>::type>
+void EntityComponentManager::AddComponentsToView(detail::View &_view,
+    const Entity _entity) const
 {
-  auto viewKey = std::vector<ComponentTypeId>{ComponentTypeTs::typeId...};
+  const ComponentTypeId typeId = FirstComponent::typeId;
 
-  auto baseViewMutexPair = this->FindView(viewKey);
-  auto baseViewPtr = baseViewMutexPair.first;
-  if (nullptr != baseViewPtr)
+  const ComponentId compId =
+      this->EntityComponentIdFromType(_entity, typeId);
+  if (compId >= 0)
   {
-    auto view = static_cast<detail::View<ComponentTypeTs...>*>(baseViewPtr);
+    // Add the component to the view.
+    _view.AddComponent(_entity, typeId, compId);
+  }
+  else
+  {
+    ignerr << "Entity[" << _entity << "] has no component of type["
+      << typeId << "]. This should never happen.\n";
+  }
+}
 
-    std::unique_ptr<std::lock_guard<std::mutex>> viewLock;
-    if (this->LockAddingEntitiesToViews())
+//////////////////////////////////////////////////
+template<typename FirstComponent,
+         typename ...RemainingComponents,
+         typename std::enable_if<
+           sizeof...(RemainingComponents) != 0, int>::type>
+void EntityComponentManager::AddComponentsToView(detail::View &_view,
+    const Entity _entity) const
+{
+  const ComponentTypeId typeId = FirstComponent::typeId;
+  const ComponentId compId =
+      this->EntityComponentIdFromType(_entity, typeId);
+  if (compId >= 0)
+  {
+    // Add the component to the view.
+    _view.AddComponent(_entity, typeId, compId);
+  }
+  else
+  {
+    ignerr << "Entity[" << _entity << "] has no component of type["
+      << typeId << "]. This should never happen.\n";
+  }
+
+  // Add the remaining components to the view.
+  this->AddComponentsToView<RemainingComponents...>(_view, _entity);
+}
+
+//////////////////////////////////////////////////
+template<typename ...ComponentTypeTs>
+detail::View &EntityComponentManager::FindView() const
+{
+  auto types = std::set<ComponentTypeId>{ComponentTypeTs::typeId...};
+
+  std::map<detail::ComponentTypeKey, detail::View>::iterator viewIter;
+
+  // Find the view. If the view doesn't exist, then create a new view.
+  if (!this->FindView(types, viewIter))
+  {
+    detail::View view;
+    // Add all the entities that match the component types to the
+    // view.
+    for (const auto &vertex : this->Entities().Vertices())
     {
-      // lock the mutex unique to this view in order to prevent multiple threads
-      // from concurrently reading/modifying the view's toAddEntities data
-      // (for example, this is useful in system PostUpdates since they are run
-      // in parallel)
-      auto mutexPtr = baseViewMutexPair.second;
-      if (nullptr == mutexPtr)
+      Entity entity = vertex.first;
+      if (this->EntityMatches(entity, types))
       {
-        ignerr << "Internal error: requested to lock a view, but no mutex "
-          << "exists for this view. This should never happen!" << std::endl;
-        return view;
+        view.AddEntity(entity, this->IsNewEntity(entity));
+        // If there is a request to delete this entity, update the view as
+        // well
+        if (this->IsMarkedForRemoval(entity))
+        {
+          view.AddEntityToRemoved(entity);
+        }
+
+        // Store pointers to all the components. This recursively adds
+        // all the ComponentTypeTs that belong to the entity to the view.
+        this->AddComponentsToView<ComponentTypeTs...>(view, entity);
       }
-      viewLock = std::make_unique<std::lock_guard<std::mutex>>(*mutexPtr);
     }
 
-    // add any new entities to the view before using it
-    for (const auto &[entity, isNew] : view->ToAddEntities())
-    {
-      view->AddEntityWithConstComps(entity, isNew,
-          this->Component<ComponentTypeTs>(entity)...);
-      view->AddEntityWithComps(entity, isNew,
-          const_cast<EntityComponentManager*>(this)->Component<ComponentTypeTs>(
-            entity)...);
-    }
-    view->ClearToAddEntities();
-
-    return view;
+    // Store the view.
+    return this->AddView(types, std::move(view))->second;
   }
 
-  // create a new view if one wasn't found
-  detail::View<ComponentTypeTs...> view;
-
-  for (const auto &vertex : this->Entities().Vertices())
-  {
-    Entity entity = vertex.first;
-
-    // only add entities to the view that have all of the components in viewKey
-    if (!this->EntityMatches(entity, view.ComponentTypes()))
-      continue;
-
-    view.AddEntityWithConstComps(entity, this->IsNewEntity(entity),
-        this->Component<ComponentTypeTs>(entity)...);
-    view.AddEntityWithComps(entity, this->IsNewEntity(entity),
-        const_cast<EntityComponentManager*>(this)->Component<ComponentTypeTs>(
-            entity)...);
-    if (this->IsMarkedForRemoval(entity))
-      view.MarkEntityToRemove(entity);
-  }
-
-  baseViewPtr = this->AddView(viewKey,
-      std::make_unique<detail::View<ComponentTypeTs...>>(view));
-  return static_cast<detail::View<ComponentTypeTs...>*>(baseViewPtr);
+  return viewIter->second;
 }
 
 //////////////////////////////////////////////////

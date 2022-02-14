@@ -17,7 +17,6 @@
 
 #include <gtest/gtest.h>
 #include <ignition/common/Console.hh>
-#include <ignition/common/Util.hh>
 #include <ignition/math/Pose3.hh>
 #include <ignition/utilities/ExtraTestMacros.hh>
 
@@ -84,9 +83,7 @@ class Relay
 
 
 /////////////////////////////////////////////////
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_P(FollowActorTest,
-       IGN_UTILS_TEST_ENABLED_ONLY_ON_LINUX(PublishCmd))
+TEST_P(FollowActorTest, IGN_UTILS_TEST_DISABLED_ON_MAC(PublishCmd))
 {
   // Start server
   ServerConfig serverConfig;

@@ -28,7 +28,6 @@
 #include <ignition/transport/Node.hh>
 
 #include "ignition/gazebo/components/JointForceCmd.hh"
-#include "ignition/gazebo/components/JointVelocityCmd.hh"
 #include "ignition/gazebo/components/JointPosition.hh"
 #include "ignition/gazebo/Model.hh"
 
@@ -65,19 +64,6 @@ class ignition::gazebo::systems::JointPositionControllerPrivate
 
   /// \brief Joint index to be used.
   public: unsigned int jointIndex = 0u;
-
-  /// \brief Operation modes
-  enum OperationMode
-  {
-    /// \brief Use PID to achieve positional control
-    PID,
-    /// \brief Bypass PID completely. This means the joint will move to that
-    /// position bypassing the physics engine.
-    ABS
-  };
-
-  /// \brief Joint position mode
-  public: OperationMode mode = OperationMode::PID;
 };
 
 //////////////////////////////////////////////////
@@ -158,15 +144,6 @@ void JointPositionController::Configure(const Entity &_entity,
   {
     cmdOffset = _sdf->Get<double>("cmd_offset");
   }
-  if (_sdf->HasElement("use_velocity_commands"))
-  {
-    auto useVelocityCommands = _sdf->Get<bool>("use_velocity_commands");
-    if (useVelocityCommands)
-    {
-      this->dataPtr->mode =
-        JointPositionControllerPrivate::OperationMode::ABS;
-    }
-  }
 
   this->dataPtr->posPid.Init(p, i, d, iMax, iMin, cmdMax, cmdMin, cmdOffset);
 
@@ -230,17 +207,8 @@ void JointPositionController::PreUpdate(
         this->dataPtr->model.JointByName(_ecm, this->dataPtr->jointName);
   }
 
-  // If the joint is still not found then warn the user, they may have entered
-  // the wrong joint name.
   if (this->dataPtr->jointEntity == kNullEntity)
-  {
-    static bool warned = false;
-    if(!warned)
-      ignerr << "Could not find joint with name ["
-        << this->dataPtr->jointName <<"]\n";
-    warned = true;
     return;
-  }
 
   // Nothing left to do if paused.
   if (_info.paused)
@@ -276,7 +244,7 @@ void JointPositionController::PreUpdate(
     return;
   }
 
-  // Get error in position
+  // Update force command.
   double error;
   {
     std::lock_guard<std::mutex> lock(this->dataPtr->jointCmdMutex);
@@ -284,48 +252,6 @@ void JointPositionController::PreUpdate(
             this->dataPtr->jointPosCmd;
   }
 
-  // Check if the mode is ABS
-  if (this->dataPtr->mode ==
-    JointPositionControllerPrivate::OperationMode::ABS)
-  {
-    // Calculate target velcity
-    double targetVel = 0;
-
-    // Get time in seconds
-    auto dt = std::chrono::duration<double>(_info.dt).count();
-
-    // Get the maximum amount in m that this joint may move
-    auto maxMovement = this->dataPtr->posPid.CmdMax() * dt;
-
-    // Limit the maximum change to maxMovement
-    if (abs(error) > maxMovement)
-    {
-      targetVel = (error < 0) ? this->dataPtr->posPid.CmdMax() :
-        -this->dataPtr->posPid.CmdMax();
-    }
-    else
-    {
-      targetVel = -error;
-    }
-
-    // Set velocity and return
-    auto vel =
-      _ecm.Component<components::JointVelocityCmd>(this->dataPtr->jointEntity);
-
-    if (vel == nullptr)
-    {
-      _ecm.CreateComponent(
-          this->dataPtr->jointEntity,
-          components::JointVelocityCmd({targetVel}));
-    }
-    else if (!vel->Data().empty())
-    {
-      vel->Data()[0] = targetVel;
-    }
-    return;
-  }
-
-  // Update force command.
   double force = this->dataPtr->posPid.Update(error, _info.dt);
 
   auto forceComp =

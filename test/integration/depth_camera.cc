@@ -35,7 +35,6 @@
 
 using namespace ignition;
 using namespace gazebo;
-using namespace std::chrono_literals;
 
 /// \brief Test DepthCameraTest system
 class DepthCameraTest : public InternalFixture<::testing::Test>
@@ -82,15 +81,15 @@ TEST_F(DepthCameraTest, IGN_UTILS_TEST_DISABLED_ON_MAC(DepthCameraBox))
   size_t iters100 = 100u;
   server.Run(true, iters100, false);
 
-  int sleep{0};
-  int maxSleep{30};
-  while (depthBuffer == nullptr && sleep < maxSleep)
+  auto waitTime = std::chrono::duration_cast< std::chrono::milliseconds>(
+      std::chrono::duration<double>(0.001));
+  int i = 0;
+  while (i < 300)
   {
-    std::this_thread::sleep_for(100ms);
-    sleep++;
+    std::this_thread::sleep_for(waitTime);
+    i++;
   }
-  EXPECT_LT(sleep, maxSleep);
-  ASSERT_NE(depthBuffer, nullptr);
+  EXPECT_NE(depthBuffer, nullptr);
 
   // Take into account box of 1 m on each side and 0.05 cm sensor offset
   double expectedRangeAtMidPointBox1 = 2.45;

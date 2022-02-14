@@ -20,7 +20,6 @@
 #include <ignition/common/Util.hh>
 #include <ignition/msgs/Utility.hh>
 #include <ignition/transport/Node.hh>
-#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "ignition/gazebo/Link.hh"
 #include "ignition/gazebo/Server.hh"
@@ -58,8 +57,7 @@ class DetachableJointTest : public InternalFixture<::testing::Test>
 };
 
 /////////////////////////////////////////////////
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_F(DetachableJointTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(StartConnected))
+TEST_F(DetachableJointTest, StartConnected)
 {
   using namespace std::chrono_literals;
 
@@ -137,7 +135,7 @@ TEST_F(DetachableJointTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(StartConnected))
 }
 
 /////////////////////////////////////////////////
-TEST_F(DetachableJointTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LinksInSameModel))
+TEST_F(DetachableJointTest, LinksInSameModel)
 {
   using namespace std::chrono_literals;
 

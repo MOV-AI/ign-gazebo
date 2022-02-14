@@ -36,12 +36,10 @@ namespace systems
   ///
   /// A new Ignition Transport topic is created to send target joint positions.
   /// The topic name is
-  /// "/model/<model_name>/joint/<joint_name>/<joint_index>/cmd_pos".
+  /// "/model/<model_name>/joint/<joint_name>/<joint_index>/cmd_pos"
   ///
   /// This topic accepts ignition::msgs::Double values representing the target
-  /// position. If you wish to change the topic on which this plugin listens
-  /// you may use the `<topic>` parameter to specify which topic the plugin
-  /// should listen on.
+  /// position.
   ///
   /// ## System Parameters
   ///
@@ -73,14 +71,6 @@ namespace systems
   ///
   /// `<cmd_offset>` Command offset (feed-forward) of the PID. Optional
   /// parameter. The default value is 0.
-  ///
-  /// `<use_velocity_commands>` Bypasses the PID and creates a perfect
-  /// position. The maximum speed on the joint can be set using the `<cmd_max>`
-  /// tag.
-  ///
-  /// `<topic>` If you wish to listen on a non-default topic you may specify it
-  /// here, otherwise the controller defaults to listening on
-  /// "/model/<model_name>/joint/<joint_name>/<joint_index>/cmd_pos".
   class JointPositionController
       : public System,
         public ISystemConfigure,

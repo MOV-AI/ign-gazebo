@@ -20,7 +20,6 @@
 #include <ignition/common/Util.hh>
 #include <ignition/msgs/Utility.hh>
 #include <ignition/transport/Node.hh>
-#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "ignition/gazebo/Link.hh"
 #include "ignition/gazebo/Server.hh"
@@ -185,8 +184,7 @@ class BlockingPublisher
 
 /////////////////////////////////////////////////
 /// Check if 'enable_wind' set only in <model> works
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_F(WindEffectsTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(WindEnabledInModel))
+TEST_F(WindEffectsTest, WindEnabledInModel)
 {
   this->StartServer("/test/worlds/wind_effects.sdf");
 
@@ -203,7 +201,7 @@ TEST_F(WindEffectsTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(WindEnabledInModel))
 
 /////////////////////////////////////////////////
 /// Check if 'enable_wind' set only in <link> works
-TEST_F(WindEffectsTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(WindEnabledInLink))
+TEST_F(WindEffectsTest, WindEnabledInLink)
 {
   this->StartServer("/test/worlds/wind_effects.sdf");
 
@@ -220,7 +218,7 @@ TEST_F(WindEffectsTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(WindEnabledInLink))
 
 
 ////////////////////////////////////////////////
-TEST_F(WindEffectsTest , IGN_UTILS_TEST_DISABLED_ON_WIN32(WindForce))
+TEST_F(WindEffectsTest , WindForce)
 {
   this->StartServer("/test/worlds/wind_effects.sdf");
   LinkComponentRecorder<components::WorldLinearAcceleration> linkAccelerations(
@@ -257,7 +255,7 @@ TEST_F(WindEffectsTest , IGN_UTILS_TEST_DISABLED_ON_WIN32(WindForce))
 }
 
 ////////////////////////////////////////////////
-TEST_F(WindEffectsTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(TopicsAndServices))
+TEST_F(WindEffectsTest , TopicsAndServices)
 {
   using namespace std::chrono_literals;
 
@@ -265,7 +263,7 @@ TEST_F(WindEffectsTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(TopicsAndServices))
   this->server->Run(true, 10, false);
 
   // As specified in SDF
-  math::Vector3d windVelSeed{10.0, 0.0, 10.0};
+  math::Vector3d windVelSeed{1.0, 0.0, 1.0};
 
   transport::Node node;
   std::size_t timeout{5000};
@@ -324,8 +322,7 @@ TEST_F(WindEffectsTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(TopicsAndServices))
 
 /// Test if adding a link with wind after first iteration adds
 /// WorldLinearVelocity component properly
-TEST_F(WindEffectsTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(WindEntityAddedAfterStart))
+TEST_F(WindEffectsTest, WindEntityAddedAfterStart)
 {
   const std::string windBox = R"EOF(
   <?xml version="1.0" ?>

@@ -19,8 +19,6 @@
 #include <chrono>
 #include <condition_variable>
 
-#include <ignition/utilities/ExtraTestMacros.hh>
-
 #include "ignition/msgs/world_control.pb.h"
 #include "ignition/msgs/world_stats.pb.h"
 #include "ignition/transport/Node.hh"
@@ -68,8 +66,7 @@ class NetworkHandshake : public InternalFixture<::testing::Test>
 };
 
 /////////////////////////////////////////////////
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_F(NetworkHandshake, IGN_UTILS_TEST_DISABLED_ON_WIN32(Handshake))
+TEST_F(NetworkHandshake, Handshake)
 {
   ServerConfig serverConfig;
   serverConfig.SetSdfString(TestWorldSansPhysics::World());
@@ -125,7 +122,7 @@ TEST_F(NetworkHandshake, IGN_UTILS_TEST_DISABLED_ON_WIN32(Handshake))
 }
 
 /////////////////////////////////////////////////
-TEST_F(NetworkHandshake, IGN_UTILS_TEST_DISABLED_ON_WIN32(Updates))
+TEST_F(NetworkHandshake, Updates)
 {
   auto pluginElem = std::make_shared<sdf::Element>();
   pluginElem->SetName("plugin");

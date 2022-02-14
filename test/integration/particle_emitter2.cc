@@ -19,10 +19,8 @@
 
 #include <string>
 
-#include <ignition/common/Util.hh>
 #include <ignition/math/Color.hh>
 #include <ignition/msgs/Utility.hh>
-#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "ignition/gazebo/Entity.hh"
 #include "ignition/gazebo/Server.hh"
@@ -59,8 +57,7 @@ class ParticleEmitter2Test : public InternalFixture<::testing::Test>
 
 /////////////////////////////////////////////////
 // Load an SDF with a particle emitter and verify its properties.
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_F(ParticleEmitter2Test, IGN_UTILS_TEST_DISABLED_ON_WIN32(SDFLoad))
+TEST_F(ParticleEmitter2Test, SDFLoad)
 {
   bool updateCustomChecked{false};
   bool updateDefaultChecked{false};
@@ -115,9 +112,23 @@ TEST_F(ParticleEmitter2Test, IGN_UTILS_TEST_DISABLED_ON_WIN32(SDFLoad))
                 EXPECT_EQ("/path/to/dummy_image.png",
                     _emitter->Data().color_range_image().data());
 
-                EXPECT_TRUE(_emitter->Data().has_particle_scatter_ratio());
-                EXPECT_FLOAT_EQ(0.01f,
-                    _emitter->Data().particle_scatter_ratio().data());
+                // particle scatter ratio is temporarily stored in header
+                bool hasParticleScatterRatio = false;
+                for (int i = 0; i < _emitter->Data().header().data_size(); ++i)
+                {
+                  for (int j = 0;
+                      j < _emitter->Data().header().data(i).value_size(); ++j)
+                  {
+                    if (_emitter->Data().header().data(i).key() ==
+                        "particle_scatter_ratio")
+                    {
+                      EXPECT_DOUBLE_EQ(0.01, math::parseFloat(
+                          _emitter->Data().header().data(i).value(0)));
+                      hasParticleScatterRatio = true;
+                    }
+                  }
+                }
+                EXPECT_TRUE(hasParticleScatterRatio);
               }
               else
               {

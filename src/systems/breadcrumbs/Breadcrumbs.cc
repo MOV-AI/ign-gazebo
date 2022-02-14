@@ -109,7 +109,7 @@ void Breadcrumbs::Configure(const Entity &_entity,
     }
     return;
   }
-  if (nullptr == this->modelRoot.Model())
+  if (this->modelRoot.ModelCount() == 0)
   {
     ignerr << "Model not found in <breadcrumb>" << std::endl;
     return;
@@ -140,7 +140,7 @@ void Breadcrumbs::Configure(const Entity &_entity,
   }
   topics.push_back("/model/" +
       this->model.Name(_ecm) + "/breadcrumbs/" +
-      this->modelRoot.Model()->Name() + "/deploy");
+      this->modelRoot.ModelByIndex(0)->Name() + "/deploy");
   this->topic = validTopic(topics);
 
   this->topicStatistics = _sdf->Get<bool>("topic_statistics",
@@ -203,7 +203,7 @@ void Breadcrumbs::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
       if (this->maxDeployments < 0 ||
           this->numDeployments < this->maxDeployments)
       {
-        sdf::Model modelToSpawn = *this->modelRoot.Model();
+        sdf::Model modelToSpawn = *this->modelRoot.ModelByIndex(0);
         std::string desiredName =
             modelToSpawn.Name() + "_" + std::to_string(this->numDeployments);
 
@@ -277,7 +277,7 @@ void Breadcrumbs::PreUpdate(const ignition::gazebo::UpdateInfo &_info,
       }
       else
       {
-        ignmsg << "Asked to deploy " << this->modelRoot.Model()->Name()
+        ignmsg << "Asked to deploy " << this->modelRoot.ModelByIndex(0)->Name()
                << " but the maximum number of deployments has reached the "
                << "limit of " << this->maxDeployments << std::endl;
       }
@@ -413,7 +413,7 @@ void Breadcrumbs::OnDeploy(const msgs::Empty &)
   if (this->topicStatistics)
   {
     ignmsg << "Received breadcrumb deployment for " <<
-      this->modelRoot.Model()->Name() << std::endl;
+      this->modelRoot.ModelByIndex(0)->Name() << std::endl;
     std::optional<transport::TopicStatistics> stats =
       this->node.TopicStats(this->topic);
     if (stats)
@@ -422,7 +422,7 @@ void Breadcrumbs::OnDeploy(const msgs::Empty &)
       {
         ignwarn << "Dropped message count of " << stats->DroppedMsgCount()
           << " for breadcrumbs on model "
-          << this->modelRoot.Model()->Name() << std::endl;
+          << this->modelRoot.ModelByIndex(0)->Name() << std::endl;
       }
     }
     else

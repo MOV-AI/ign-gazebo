@@ -19,6 +19,7 @@
 
 #include <memory>
 #include <ignition/gazebo/config.hh>
+#include <ignition/gazebo/Export.hh>
 #include <ignition/gazebo/System.hh>
 
 namespace ignition
@@ -53,7 +54,7 @@ namespace systems
   /// <animation_x_vel>: Velocity of the animation on the X axis. Used to
   ///                    coordinate translational motion with the actor's
   ///                    animation.
-  class FollowActor:
+  class IGNITION_GAZEBO_VISIBLE FollowActor:
     public System,
     public ISystemConfigure,
     public ISystemPreUpdate

@@ -18,7 +18,6 @@
 #include "Plotting.hh"
 
 #include <ignition/plugin/Register.hh>
-
 #include "ignition/gazebo/components/AngularAcceleration.hh"
 #include "ignition/gazebo/components/AngularVelocity.hh"
 #include "ignition/gazebo/components/CastShadows.hh"
@@ -33,7 +32,6 @@
 #include "ignition/gazebo/components/Physics.hh"
 #include "ignition/gazebo/components/Pose.hh"
 #include "ignition/gazebo/components/PoseCmd.hh"
-#include "ignition/gazebo/components/SphericalCoordinates.hh"
 #include "ignition/gazebo/components/Static.hh"
 #include "ignition/gazebo/components/WindMode.hh"
 #include "ignition/gazebo/components/World.hh"
@@ -50,9 +48,6 @@ namespace ignition::gazebo
     /// map key: string contains EntityID + "," + ComponentID
     public: std::map<std::string,
       std::shared_ptr<PlotComponent>> components;
-
-    /// \brief Mutex to protect the components map.
-    public: std::recursive_mutex componentsMutex;
   };
 
   class PlotComponentPrivate
@@ -73,7 +68,6 @@ namespace ignition::gazebo
   };
 }
 
-using namespace ignition;
 using namespace ignition::gazebo;
 using namespace ignition::gui;
 
@@ -123,7 +117,6 @@ PlotComponent::PlotComponent(const std::string &_type,
     this->dataPtr->data["innerAngle"] = std::make_shared<PlotData>();
     this->dataPtr->data["outerAngle"] = std::make_shared<PlotData>();
     this->dataPtr->data["falloff"] = std::make_shared<PlotData>();
-    this->dataPtr->data["intensity"] = std::make_shared<PlotData>();
   }
   else if (_type == "double")
     this->dataPtr->data["value"] = std::make_shared<PlotData>();
@@ -131,13 +124,6 @@ PlotComponent::PlotComponent(const std::string &_type,
   {
     this->dataPtr->data["stepSize"] = std::make_shared<PlotData>();
     this->dataPtr->data["realTimeFactor"] = std::make_shared<PlotData>();
-  }
-  else if (_type == "SphericalCoordinates")
-  {
-    this->dataPtr->data["latitude"] = std::make_shared<PlotData>();
-    this->dataPtr->data["longitude"] = std::make_shared<PlotData>();
-    this->dataPtr->data["elevation"] = std::make_shared<PlotData>();
-    this->dataPtr->data["heading"] = std::make_shared<PlotData>();
   }
   else
     ignwarn << "Invalid Plot Component Type:" << _type << std::endl;
@@ -206,7 +192,7 @@ ComponentTypeId PlotComponent::TypeId()
 }
 
 //////////////////////////////////////////////////
-Plotting::Plotting() : GuiSystem(),
+Plotting ::Plotting() : GuiSystem(),
   dataPtr(std::make_unique<PlottingPrivate>())
 {
   this->dataPtr->plottingIface = std::make_unique<gui::PlottingInterface>();
@@ -227,7 +213,7 @@ Plotting::Plotting() : GuiSystem(),
 }
 
 //////////////////////////////////////////////////
-Plotting::~Plotting()
+Plotting ::~Plotting()
 {
 }
 
@@ -241,16 +227,13 @@ void Plotting::LoadConfig(const tinyxml2::XMLElement *)
 //////////////////////////////////////////////////
 void Plotting::SetData(std::string _Id, const ignition::math::Vector3d &_vector)
 {
-  std::lock_guard<std::recursive_mutex> lock(this->dataPtr->componentsMutex);
   this->dataPtr->components[_Id]->SetAttributeValue("x", _vector.X());
   this->dataPtr->components[_Id]->SetAttributeValue("y", _vector.Y());
   this->dataPtr->components[_Id]->SetAttributeValue("z", _vector.Z());
 }
 
-//////////////////////////////////////////////////
-void Plotting::SetData(std::string _Id, const ignition::msgs::Light &_light)
+void Plotting::SetData(std::string _Id, const msgs::Light &_light)
 {
-  std::lock_guard<std::recursive_mutex> lock(this->dataPtr->componentsMutex);
   if (_light.has_specular())
   {
     this->dataPtr->components[_Id]->SetAttributeValue("specularR",
@@ -283,8 +266,6 @@ void Plotting::SetData(std::string _Id, const ignition::msgs::Light &_light)
     _light.attenuation_quadratic());
   this->dataPtr->components[_Id]->SetAttributeValue("castshadows",
     _light.cast_shadows());
-  this->dataPtr->components[_Id]->SetAttributeValue("intensity",
-    _light.intensity());
   if (_light.has_direction())
   {
     this->dataPtr->components[_Id]->SetAttributeValue("directionX",
@@ -305,7 +286,6 @@ void Plotting::SetData(std::string _Id, const ignition::msgs::Light &_light)
 //////////////////////////////////////////////////
 void Plotting::SetData(std::string _Id, const ignition::math::Pose3d &_pose)
 {
-  std::lock_guard<std::recursive_mutex> lock(this->dataPtr->componentsMutex);
   this->dataPtr->components[_Id]->SetAttributeValue("x", _pose.Pos().X());
   this->dataPtr->components[_Id]->SetAttributeValue("y", _pose.Pos().Y());
   this->dataPtr->components[_Id]->SetAttributeValue("z", _pose.Pos().Z());
@@ -316,23 +296,8 @@ void Plotting::SetData(std::string _Id, const ignition::math::Pose3d &_pose)
 }
 
 //////////////////////////////////////////////////
-void Plotting::SetData(std::string _Id, const math::SphericalCoordinates &_sc)
-{
-  std::lock_guard<std::recursive_mutex> lock(this->dataPtr->componentsMutex);
-  this->dataPtr->components[_Id]->SetAttributeValue("latitude",
-      _sc.LatitudeReference().Degree());
-  this->dataPtr->components[_Id]->SetAttributeValue("longitude",
-      _sc.LongitudeReference().Degree());
-  this->dataPtr->components[_Id]->SetAttributeValue("elevation",
-      _sc.ElevationReference());
-  this->dataPtr->components[_Id]->SetAttributeValue("heading",
-      _sc.HeadingOffset().Degree());
-}
-
-//////////////////////////////////////////////////
 void Plotting::SetData(std::string _Id, const sdf::Physics &_physics)
 {
-  std::lock_guard<std::recursive_mutex> lock(this->dataPtr->componentsMutex);
   this->dataPtr->components[_Id]->SetAttributeValue("stepSize",
       _physics.MaxStepSize());
   this->dataPtr->components[_Id]->SetAttributeValue("realTimeFactor",
@@ -342,7 +307,6 @@ void Plotting::SetData(std::string _Id, const sdf::Physics &_physics)
 //////////////////////////////////////////////////
 void Plotting::SetData(std::string _Id, const double &_value)
 {
-  std::lock_guard<std::recursive_mutex> lock(this->dataPtr->componentsMutex);
   this->dataPtr->components[_Id]->SetAttributeValue("value", _value);
 }
 
@@ -353,7 +317,6 @@ void Plotting::RegisterChartToComponent(uint64_t _entity, uint64_t _typeId,
                                         std::string _attribute,
                                         int _chart)
 {
-  std::lock_guard<std::recursive_mutex> lock(this->dataPtr->componentsMutex);
   std::string Id = std::to_string(_entity) + "," + std::to_string(_typeId);
 
   if (this->dataPtr->components.count(Id) == 0)
@@ -369,7 +332,6 @@ void Plotting::RegisterChartToComponent(uint64_t _entity, uint64_t _typeId,
 void Plotting::UnRegisterChartFromComponent(uint64_t _entity, uint64_t _typeId,
                                             std::string _attribute, int _chart)
 {
-  std::lock_guard<std::recursive_mutex> lock(this->dataPtr->componentsMutex);
   std::string id = std::to_string(_entity) + "," + std::to_string(_typeId);
   igndbg << "UnRegister [" << id  << "]" << std::endl;
 
@@ -379,7 +341,7 @@ void Plotting::UnRegisterChartFromComponent(uint64_t _entity, uint64_t _typeId,
   this->dataPtr->components[id]->UnRegisterChart(_attribute, _chart);
 
   if (!this->dataPtr->components[id]->HasCharts())
-    this->dataPtr->components.erase(id);
+      this->dataPtr->components.erase(id);
 }
 
 //////////////////////////////////////////////////
@@ -396,10 +358,9 @@ std::string Plotting::ComponentName(const uint64_t &_typeId)
 }
 
 //////////////////////////////////////////////////
-void Plotting::Update(const ignition::gazebo::UpdateInfo &_info,
+void Plotting ::Update(const ignition::gazebo::UpdateInfo &_info,
                        ignition::gazebo::EntityComponentManager &_ecm)
 {
-  std::lock_guard<std::recursive_mutex> lock(this->dataPtr->componentsMutex);
   for (auto component : this->dataPtr->components)
   {
     auto entity = component.second->Entity();
@@ -471,12 +432,6 @@ void Plotting::Update(const ignition::gazebo::UpdateInfo &_info,
       if (comp)
         this->SetData(component.first, comp->Data());
     }
-    else if (typeId == components::SphericalCoordinates::typeId)
-    {
-      auto comp = _ecm.Component<components::SphericalCoordinates>(entity);
-      if (comp)
-        this->SetData(component.first, comp->Data());
-    }
     else if (typeId == components::TrajectoryPose::typeId)
     {
       auto comp = _ecm.Component<components::TrajectoryPose>(entity);
@@ -527,8 +482,7 @@ void Plotting::Update(const ignition::gazebo::UpdateInfo &_info,
       auto comp = _ecm.Component<components::Light>(entity);
       if (comp)
       {
-        ignition::msgs::Light lightMsgs =
-          convert<ignition::msgs::Light>(comp->Data());
+        msgs::Light lightMsgs = convert<msgs::Light>(comp->Data());
         this->SetData(component.first, lightMsgs);
       }
     }
@@ -550,6 +504,6 @@ void Plotting::Update(const ignition::gazebo::UpdateInfo &_info,
 }
 
 // Register this plugin
-IGNITION_ADD_PLUGIN(ignition::gazebo::Plotting,
+IGNITION_ADD_PLUGIN(ignition::gazebo::Plotting ,
                     ignition::gazebo::GuiSystem,
                     ignition::gui::Plugin)

@@ -96,9 +96,6 @@ Rectangle {
   // Loaded item for falloff (spotlight)
   property var falloffItem: {}
 
-  // Loaded item for intensity
-  property var intensityItem: {}
-
   // Send new light data to C++
   function sendLight() {
     // TODO(anyone) There's a loss of precision when these values get to C++
@@ -122,8 +119,7 @@ Rectangle {
       innerAngleItem.value,
       outerAngleItem.value,
       falloffItem.value,
-      intensityItem.value,
-      model.data[20]
+      model.data[19]
     );
   }
 
@@ -221,11 +217,48 @@ Rectangle {
   Column {
     anchors.fill: parent
 
-    // The expanding header. Make sure that the content to expand has an id set
-    // to the value "content".
-    ExpandingTypeHeader {
+    // Header
+    Rectangle {
       id: header
-      // Using the default header text values.
+      width: parent.width
+      height: typeHeader.height
+      color: "transparent"
+
+      RowLayout {
+        anchors.fill: parent
+        Item {
+          width: margin
+        }
+        Image {
+          id: icon
+          sourceSize.height: indentation
+          sourceSize.width: indentation
+          fillMode: Image.Pad
+          Layout.alignment : Qt.AlignVCenter
+          source: content.show ?
+              "qrc:/Gazebo/images/minus.png" : "qrc:/Gazebo/images/plus.png"
+        }
+        TypeHeader {
+          id: typeHeader
+        }
+        Item {
+          Layout.fillWidth: true
+        }
+      }
+      MouseArea {
+        anchors.fill: parent
+        hoverEnabled: true
+        cursorShape: Qt.PointingHandCursor
+        onClicked: {
+          content.show = !content.show
+        }
+        onEntered: {
+          header.color = highlightColor
+        }
+        onExited: {
+          header.color = "transparent"
+        }
+      }
     }
 
     // Content
@@ -248,44 +281,6 @@ Rectangle {
         id: grid
         width: parent.width
 
-        RowLayout {
-          Rectangle {
-            color: "transparent"
-            height: 40
-            Layout.preferredWidth: intensityText.width + indentation*3
-            Loader {
-              id: loaderIntensity
-              width: iconWidth
-              height: iconHeight
-              y:10
-              sourceComponent: plotIcon
-            }
-            Component.onCompleted: loaderIntensity.item.componentInfo = "intensity"
-
-            Text {
-              id : intensityText
-              text: ' Intensity:'
-              leftPadding: 5
-              color: Material.theme == Material.Light ? "#444444" : "#bbbbbb"
-              font.pointSize: 12
-              anchors.centerIn: parent
-            }
-          }
-          Item {
-            Layout.fillWidth: true
-            height: 40
-            Layout.columnSpan: 4
-            Loader {
-              id: intensityLoader
-              anchors.fill: parent
-              property double numberValue: model.data[19]
-              sourceComponent: spinZeroMax
-              onLoaded: {
-                intensityItem = intensityLoader.item
-              }
-            }
-          }
-        }
         RowLayout {
           Layout.alignment : Qt.AlignLeft
           Text {

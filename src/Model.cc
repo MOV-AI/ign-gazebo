@@ -33,8 +33,7 @@ class ignition::gazebo::ModelPrivate
   public: Entity id{kNullEntity};
 };
 
-using namespace ignition;
-using namespace gazebo;
+using namespace ignition::gazebo;
 
 //////////////////////////////////////////////////
 Model::Model(gazebo::Entity _entity)
@@ -161,14 +160,6 @@ std::vector<Entity> Model::Links(const EntityComponentManager &_ecm) const
   return _ecm.EntitiesByComponents(
       components::ParentEntity(this->dataPtr->id),
       components::Link());
-}
-
-//////////////////////////////////////////////////
-std::vector<Entity> Model::Models(const EntityComponentManager &_ecm) const
-{
-  return _ecm.EntitiesByComponents(
-      components::ParentEntity(this->dataPtr->id),
-      components::Model());
 }
 
 //////////////////////////////////////////////////

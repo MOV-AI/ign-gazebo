@@ -24,7 +24,6 @@
 #include <ignition/common/Console.hh>
 #include <ignition/common/Util.hh>
 #include <ignition/transport/Node.hh>
-#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "ignition/gazebo/Server.hh"
 #include "ignition/gazebo/SystemLoader.hh"
@@ -42,9 +41,7 @@ class ContactSystemTest : public InternalFixture<::testing::Test>
 
 /////////////////////////////////////////////////
 // The test checks that contacts are published by the contact system
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_F(ContactSystemTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(MultipleCollisionsAsContactSensors))
+TEST_F(ContactSystemTest, MultipleCollisionsAsContactSensors)
 {
   // Start server
   ServerConfig serverConfig;
@@ -117,8 +114,7 @@ TEST_F(ContactSystemTest,
   }
 }
 
-TEST_F(ContactSystemTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(RemoveContactSensor))
+TEST_F(ContactSystemTest, RemoveContactSensor)
 {
   // Start server
   ServerConfig serverConfig;

@@ -21,10 +21,8 @@
 #include <mutex>
 
 #include <ignition/common/Console.hh>
-#include <ignition/common/Util.hh>
 #include <ignition/math/Pose3.hh>
 #include <ignition/transport/Node.hh>
-#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "ignition/gazebo/Server.hh"
 #include "ignition/gazebo/SystemLoader.hh"
@@ -52,8 +50,7 @@ void cb(const msgs::Double &_msg)
 
 /////////////////////////////////////////////////
 // The test checks the world pose and sensor readings of a falling altimeter
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_F(KineticEnergyMonitorTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(ModelFalling))
+TEST_F(KineticEnergyMonitorTest, ModelFalling)
 {
   // Start server
   ServerConfig serverConfig;

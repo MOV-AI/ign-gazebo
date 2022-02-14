@@ -113,13 +113,13 @@ namespace systems
   ///            Note that the emitter id and name may not be changed.
   ///            See the examples/worlds/particle_emitter.sdf example world for
   ///            example usage.
-  class ParticleEmitter
+  class IGNITION_GAZEBO_VISIBLE ParticleEmitter
       : public System,
         public ISystemConfigure,
         public ISystemPreUpdate
   {
     /// \brief Constructor
-    public: IGN_DEPRECATED(6) ParticleEmitter();
+    public: ParticleEmitter();
 
     // Documentation inherited
     public: void Configure(const Entity &_entity,

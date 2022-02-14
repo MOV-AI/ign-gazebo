@@ -19,7 +19,6 @@
 #include <ignition/msgs/pose.pb.h>
 
 #include <ignition/transport/Node.hh>
-#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "ignition/gazebo/Server.hh"
 #include "ignition/gazebo/SystemLoader.hh"
@@ -61,8 +60,7 @@ class PerformerDetectorTest : public InternalFixture<::testing::Test>
 
 /////////////////////////////////////////////////
 // Test that commanded motor speed is applied
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_F(PerformerDetectorTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(MovingPerformer))
+TEST_F(PerformerDetectorTest, MovingPerformer)
 {
   auto server = this->StartServer("/test/worlds/performer_detector.sdf");
 
@@ -193,8 +191,7 @@ TEST_F(PerformerDetectorTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(MovingPerformer))
 /////////////////////////////////////////////////
 // Test that Performer detector handles the case where the associated model is
 // removed, for example, by the level manager
-TEST_F(PerformerDetectorTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(HandlesRemovedParentModel))
+TEST_F(PerformerDetectorTest, HandlesRemovedParentModel)
 {
   auto server = this->StartServer("/test/worlds/performer_detector.sdf", true);
 

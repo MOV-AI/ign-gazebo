@@ -20,7 +20,6 @@
 #include <ignition/common/Util.hh>
 #include <ignition/math/Pose3.hh>
 #include <ignition/transport/Node.hh>
-#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "ignition/gazebo/components/Name.hh"
 #include "ignition/gazebo/components/Model.hh"
@@ -148,8 +147,7 @@ class HaltMotionTest : public InternalFixture<::testing::TestWithParam<int>>
 };
 
 /////////////////////////////////////////////////
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_P(HaltMotionTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(PublishCmd))
+TEST_P(HaltMotionTest, PublishCmd)
 {
   TestPublishCmd(
       std::string(PROJECT_SOURCE_PATH) + "/test/worlds/diff_drive.sdf",

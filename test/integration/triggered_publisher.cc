@@ -27,7 +27,6 @@
 #include <ignition/common/Console.hh>
 #include <ignition/common/Util.hh>
 #include <ignition/transport/Node.hh>
-#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "ignition/gazebo/Server.hh"
 #include "ignition/gazebo/SystemLoader.hh"
@@ -91,9 +90,7 @@ bool waitUntil(int _timeoutMs, Pred _pred)
 /////////////////////////////////////////////////
 /// Check that empty message types do not need any data to be specified in the
 /// configuration
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_F(TriggeredPublisherTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(EmptyInputEmptyOutput))
+TEST_F(TriggeredPublisherTest, EmptyInputEmptyOutput)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Empty>("/in_0");
@@ -117,8 +114,7 @@ TEST_F(TriggeredPublisherTest,
 }
 
 /////////////////////////////////////////////////
-TEST_F(TriggeredPublisherTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(WrongInputMessageTypeDoesNotMatch))
+TEST_F(TriggeredPublisherTest, WrongInputMessageTypeDoesNotMatch)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Boolean>("/in_0");
@@ -141,8 +137,7 @@ TEST_F(TriggeredPublisherTest,
 }
 
 /////////////////////////////////////////////////
-TEST_F(TriggeredPublisherTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(InputMessagesTriggerOutputs))
+TEST_F(TriggeredPublisherTest, InputMessagesTriggerOutputs)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Empty>("/in_1");
@@ -167,8 +162,7 @@ TEST_F(TriggeredPublisherTest,
 }
 
 /////////////////////////////////////////////////
-TEST_F(TriggeredPublisherTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(MultipleOutputsForOneInput))
+TEST_F(TriggeredPublisherTest, MultipleOutputsForOneInput)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Empty>("/in_2");
@@ -213,8 +207,7 @@ TEST_F(TriggeredPublisherTest,
 }
 
 /////////////////////////////////////////////////
-TEST_F(TriggeredPublisherTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(ExactMatchBooleanInputs))
+TEST_F(TriggeredPublisherTest, ExactMatchBooleanInputs)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Boolean>("/in_3");
@@ -247,8 +240,7 @@ TEST_F(TriggeredPublisherTest,
 }
 
 /////////////////////////////////////////////////
-TEST_F(TriggeredPublisherTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(MatchersWithLogicTypeAttribute))
+TEST_F(TriggeredPublisherTest, MatchersWithLogicTypeAttribute)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Int32>("/in_4");
@@ -284,8 +276,7 @@ TEST_F(TriggeredPublisherTest,
 }
 
 /////////////////////////////////////////////////
-TEST_F(TriggeredPublisherTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(MultipleMatchersAreAnded))
+TEST_F(TriggeredPublisherTest, MultipleMatchersAreAnded)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Int32>("/in_5");
@@ -310,7 +301,7 @@ TEST_F(TriggeredPublisherTest,
 }
 
 /////////////////////////////////////////////////
-TEST_F(TriggeredPublisherTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(FieldMatchers))
+TEST_F(TriggeredPublisherTest, FieldMatchers)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Vector2d>("/in_6");
@@ -349,9 +340,7 @@ TEST_F(TriggeredPublisherTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(FieldMatchers))
 /////////////////////////////////////////////////
 /// Tests that if the specified field is a repeated field, a partial match is
 /// used when comparing against the input.
-TEST_F(TriggeredPublisherTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(
-           FieldMatchersWithRepeatedFieldsUsePartialMatches))
+TEST_F(TriggeredPublisherTest, FieldMatchersWithRepeatedFieldsUsePartialMatches)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Pose>("/in_7");
@@ -388,8 +377,7 @@ TEST_F(TriggeredPublisherTest,
   EXPECT_EQ(1u, recvCount);
 }
 
-TEST_F(TriggeredPublisherTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(WrongInputWhenRepeatedSubFieldExpected))
+TEST_F(TriggeredPublisherTest, WrongInputWhenRepeatedSubFieldExpected)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Empty>("/in_7");
@@ -418,8 +406,8 @@ TEST_F(TriggeredPublisherTest,
 /// fields by specifying the containing field of the repeated field in the
 /// "field" attribute and setting the desired values of the repeated field in
 /// the value of the <match> tag.
-TEST_F(TriggeredPublisherTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(
-       FieldMatchersWithRepeatedFieldsInValueUseFullMatches))
+TEST_F(TriggeredPublisherTest,
+       FieldMatchersWithRepeatedFieldsInValueUseFullMatches)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Pose>("/in_8");
@@ -460,8 +448,8 @@ TEST_F(TriggeredPublisherTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(
 /// Tests that full matchers can be used with repeated fields by specifying the
 /// desired values of the repeated field in the value of the <match> tag. The
 /// message created from the value of <match> must be a full match of the input.
-TEST_F(TriggeredPublisherTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(
-       FullMatchersWithRepeatedFieldsInValueUseFullMatches))
+TEST_F(TriggeredPublisherTest,
+       FullMatchersWithRepeatedFieldsInValueUseFullMatches)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Int32_V>("/in_9");
@@ -488,8 +476,7 @@ TEST_F(TriggeredPublisherTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(
   EXPECT_EQ(1u, recvCount);
 }
 
-TEST_F(TriggeredPublisherTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(FullMatchersAcceptToleranceParam))
+TEST_F(TriggeredPublisherTest, FullMatchersAcceptToleranceParam)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Float>("/in_10");
@@ -516,8 +503,7 @@ TEST_F(TriggeredPublisherTest,
   EXPECT_EQ(3u, recvCount);
 }
 
-TEST_F(TriggeredPublisherTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(FieldMatchersAcceptToleranceParam))
+TEST_F(TriggeredPublisherTest, FieldMatchersAcceptToleranceParam)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Pose>("/in_11");
@@ -546,8 +532,7 @@ TEST_F(TriggeredPublisherTest,
   EXPECT_EQ(3u, recvCount);
 }
 
-TEST_F(TriggeredPublisherTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(SubfieldsOfRepeatedFieldsNotSupported))
+TEST_F(TriggeredPublisherTest, SubfieldsOfRepeatedFieldsNotSupported)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Header>("/in_12");
@@ -577,7 +562,7 @@ TEST_F(TriggeredPublisherTest,
   EXPECT_EQ(0u, recvCount);
 }
 
-TEST_F(TriggeredPublisherTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(TriggerDelay))
+TEST_F(TriggeredPublisherTest, TriggerDelay)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Empty>("/in_13");
@@ -612,8 +597,7 @@ TEST_F(TriggeredPublisherTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(TriggerDelay))
   EXPECT_EQ(pubCount, recvCount);
 }
 
-TEST_F(TriggeredPublisherTest,
-       IGN_UTILS_TEST_DISABLED_ON_WIN32(WrongInputWhenRepeatedFieldExpected))
+TEST_F(TriggeredPublisherTest, WrongInputWhenRepeatedFieldExpected)
 {
   transport::Node node;
   auto inputPub = node.Advertise<msgs::Int32>("/invalid_topic");

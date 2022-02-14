@@ -56,12 +56,9 @@ inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
   class Scene3DPrivate;
   class RenderUtil;
 
-  /// \brief Creates an ignition rendering scene and user camera.
-  /// It is possible to orbit the camera around the scene with
+  /// \brief Creates a new ignition rendering scene or adds a user-camera to an
+  /// existing scene. It is possible to orbit the camera around the scene with
   /// the mouse. Use other plugins to manage objects in the scene.
-  ///
-  /// Only one plugin displaying an Ignition Rendering scene can be used at a
-  /// time.
   ///
   /// ## Configuration
   ///
@@ -89,14 +86,6 @@ inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
       READ ErrorPopupText
       WRITE SetErrorPopupText
       NOTIFY ErrorPopupTextChanged
-    )
-
-    /// \brief Loading error message
-    Q_PROPERTY(
-      QString loadingError
-      READ LoadingError
-      WRITE SetLoadingError
-      NOTIFY LoadingErrorChanged
     )
 
     /// \brief Constructor
@@ -180,43 +169,6 @@ inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
     private: bool OnMoveToPose(const msgs::GUICamera &_msg,
                  msgs::Boolean &_res);
 
-    /// \brief Callback for view as transparent request
-    /// \param[in] _msg Request message to set the target to view as
-    /// transparent
-    /// \param[in] _res Response data
-    /// \return True if the request is received
-    private: bool OnViewTransparent(const msgs::StringMsg &_msg,
-                 msgs::Boolean &_res);
-
-    /// \brief Callback for view center of mass request
-    /// \param[in] _msg Request message to set the target to view center of
-    /// mass
-    /// \param[in] _res Response data
-    /// \return True if the request is received
-    private: bool OnViewCOM(const msgs::StringMsg &_msg,
-        msgs::Boolean &_res);
-
-    /// \brief Callback for view inertia request
-    /// \param[in] _msg Request message to set the target to view inertia
-    /// \param[in] _res Response data
-    /// \return True if the request is received
-    private: bool OnViewInertia(const msgs::StringMsg &_msg,
-        msgs::Boolean &_res);
-
-    /// \brief Callback for view joints request
-    /// \param[in] _msg Request message to set the target to view joints
-    /// \param[in] _res Response data
-    /// \return True if the request is received
-    private: bool OnViewJoints(const msgs::StringMsg &_msg,
-        msgs::Boolean &_res);
-
-    /// \brief Callback for view wireframes request
-    /// \param[in] _msg Request message to set the target to view wireframes
-    /// \param[in] _res Response data
-    /// \return True if the request is received
-    private: bool OnViewWireframes(const msgs::StringMsg &_msg,
-        msgs::Boolean &_res);
-
     /// \brief Callback for view collisions request
     /// \param[in] _msg Request message to set the target to view collisions
     /// \param[in] _res Response data
@@ -240,33 +192,10 @@ inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
     /// the connection to work on the QML side
     signals: void popupError();
 
-    /// \brief Callback for camera view controller request
-    /// \param[in] _msg Request message to set the camera view controller
-    /// \param[in] _res Response data
-    /// \return True if the request is received
-    private: bool OnViewControl(const msgs::StringMsg &_msg,
-        msgs::Boolean &_res);
-
-    /// \brief Get the loading error string.
-    /// \return String explaining the loading error. If empty, there's no error.
-    public: Q_INVOKABLE QString LoadingError() const;
-
-    /// \brief Set the loading error message.
-    /// \param[in] _loadingError Error message.
-    public: Q_INVOKABLE void SetLoadingError(const QString &_loadingError);
-
-    /// \brief Notify that loading error has changed
-    signals: void LoadingErrorChanged();
-
-    /// \brief Loading error message
-    public: QString loadingError;
-
     /// \internal
     /// \brief Pointer to private data.
     private: std::unique_ptr<Scene3DPrivate> dataPtr;
   };
-
-  class RenderSync;
 
   /// \brief Ign-rendering renderer.
   /// All ign-rendering calls should be performed inside this class as it makes
@@ -285,14 +214,10 @@ inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
     public: ~IgnRenderer() override;
 
     ///  \brief Main render function
-    /// \param[in] _renderSync RenderSync to safely
-    /// synchronize Qt and worker thread (this)
-    public: void Render(RenderSync *_renderSync);
+    public: void Render();
 
     /// \brief Initialize the render engine
-    /// \return Error message if initialization failed. If empty, no errors
-    /// occurred.
-    public: std::string Initialize();
+    public: void Initialize();
 
     /// \brief Destroy camera associated with this renderer
     public: void Destroy();
@@ -358,33 +283,9 @@ inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
     /// \param[in] _pose The world pose to set the camera to.
     public: void SetMoveToPose(const math::Pose3d &_pose);
 
-    /// \brief View the specified target as transparent
-    /// \param[in] _target Target to view as transparent
-    public: void SetViewTransparentTarget(const std::string &_target);
-
-    /// \brief View center of mass of the specified target
-    /// \param[in] _target Target to view center of mass
-    public: void SetViewCOMTarget(const std::string &_target);
-
-    /// \brief View inertia of the specified target
-    /// \param[in] _target Target to view inertia
-    public: void SetViewInertiaTarget(const std::string &_target);
-
-    /// \brief View joints of the specified target
-    /// \param[in] _target Target to view joints
-    public: void SetViewJointsTarget(const std::string &_target);
-
-    /// \brief View wireframes of the specified target
-    /// \param[in] _target Target to view wireframes
-    public: void SetViewWireframesTarget(const std::string &_target);
-
     /// \brief View collisions of the specified target
     /// \param[in] _target Target to view collisions
     public: void SetViewCollisionsTarget(const std::string &_target);
-
-    /// \brief Set camera view controller
-    /// \param[in] _viewController. Values are "orbit", and "ortho"
-    public: void SetViewController(const std::string &_viewController);
 
     /// \brief Set the p gain for the camera follow movement
     /// \param[in] _gain Camera follow p gain.
@@ -580,10 +481,7 @@ inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
         bool _waitForTarget);
 
     /// \brief Render texture id
-    /// Values is constantly constantly cycled/swapped/changed
-    /// from a worker thread
-    /// Don't read this directly
-    public: GLuint textureId;
+    public: GLuint textureId = 0u;
 
     /// \brief Initial Camera pose
     public: math::Pose3d cameraPose = math::Pose3d(0, 0, 2, 0, 0.4, 0);
@@ -617,9 +515,7 @@ inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
     public: RenderThread();
 
     /// \brief Render the next frame
-    /// \param[in] _renderSync RenderSync to safely
-    /// synchronize Qt and worker thread (this)
-    public slots: void RenderNext(RenderSync *renderSync);
+    public slots: void RenderNext();
 
     /// \brief Shutdown the thread and the render engine
     public slots: void ShutDown();
@@ -631,14 +527,7 @@ inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
     /// to be displayed
     /// \param[in] _id GLuid of the opengl texture
     /// \param[in] _size Size of the texture
-    signals: void TextureReady(uint _id, const QSize &_size);
-
-    /// \brief Set a callback to be called in case there are errors.
-    /// \param[in] _cb Error callback
-    public: void SetErrorCb(std::function<void(const QString &)> _cb);
-
-    /// \brief Function to be called if there are errors.
-    public: std::function<void(const QString &)> errorCb;
+    signals: void TextureReady(int _id, const QSize &_size);
 
     /// \brief Offscreen surface to render to
     public: QOffscreenSurface *surface = nullptr;
@@ -740,33 +629,9 @@ inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
     /// \param[in] _pose The new camera pose in the world frame.
     public: void SetMoveToPose(const math::Pose3d &_pose);
 
-    /// \brief View the specified target as transparent
-    /// \param[in] _target Target to view as transparent
-    public: void SetViewTransparentTarget(const std::string &_target);
-
-    /// \brief View center of mass of the specified target
-    /// \param[in] _target Target to view center of mass
-    public: void SetViewCOMTarget(const std::string &_target);
-
-    /// \brief View inertia of the specified target
-    /// \param[in] _target Target to view inertia
-    public: void SetViewInertiaTarget(const std::string &_target);
-
-    /// \brief View joints of the specified target
-    /// \param[in] _target Target to view joints
-    public: void SetViewJointsTarget(const std::string &_target);
-
-    /// \brief View wireframes of the specified target
-    /// \param[in] _target Target to view wireframes
-    public: void SetViewWireframesTarget(const std::string &_target);
-
     /// \brief View collisions of the specified target
     /// \param[in] _target Target to view collisions
     public: void SetViewCollisionsTarget(const std::string &_target);
-
-    /// \brief Set camera view controller
-    /// \param[in] _viewController. Values are "orbit", and "ortho"
-    public: void SetViewController(const std::string &_viewController);
 
     /// \brief Set the p gain for the camera follow movement
     /// \param[in] _gain Camera follow p gain.
@@ -875,10 +740,6 @@ inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
     /// \param[in] _entity Scoped name of entity.
     public slots: void OnContextMenuRequested(QString _entity);
 
-    /// \brief Set a callback to be called in case there are errors.
-    /// \param[in] _cb Error callback
-    public: void SetErrorCb(std::function<void(const QString &)> _cb);
-
     /// \internal
     /// \brief Pointer to private data.
     private: std::unique_ptr<RenderWindowItemPrivate> dataPtr;
@@ -891,10 +752,7 @@ inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
 
     /// \brief Constructor
     /// \param[in] _window Parent window
-    /// \param[in] _renderSync RenderSync to safely
-    /// synchronize Qt (this) and worker thread
-    public: explicit TextureNode(QQuickWindow *_window,
-                                 RenderSync &_renderSync);
+    public: explicit TextureNode(QQuickWindow *_window);
 
     /// \brief Destructor
     public: ~TextureNode() override;
@@ -903,7 +761,7 @@ inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
     ///  store the texture id and size and schedule an update on the window.
     /// \param[in] _id OpenGL render texture Id
     /// \param[in] _size Texture size
-    public slots: void NewTexture(uint _id, const QSize &_size);
+    public slots: void NewTexture(int _id, const QSize &_size);
 
     /// \brief Before the scene graph starts to render, we update to the
     /// pending texture
@@ -911,24 +769,20 @@ inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
 
     /// \brief Signal emitted when the texture is being rendered and renderer
     /// can start rendering next frame
-    /// \param[in] _renderSync RenderSync to send to the worker thread
-    signals: void TextureInUse(RenderSync *_renderSync);
+    signals: void TextureInUse();
 
     /// \brief Signal emitted when a new texture is ready to trigger window
     /// update
     signals: void PendingNewTexture();
 
     /// \brief OpenGL texture id
-    public: uint id = 0;
+    public: int id = 0;
 
     /// \brief Texture size
     public: QSize size = QSize(0, 0);
 
     /// \brief Mutex to protect the texture variables
     public: QMutex mutex;
-
-    /// \brief See RenderSync
-    public: RenderSync &renderSync;
 
     /// \brief Qt's scene graph texture
     public: QSGTexture *texture = nullptr;

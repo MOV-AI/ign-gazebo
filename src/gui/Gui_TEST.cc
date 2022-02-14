@@ -42,8 +42,7 @@ class GuiTest : public InternalFixture<::testing::Test>
 
 /////////////////////////////////////////////////
 // https://github.com/ignitionrobotics/ign-gazebo/issues/8
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_F(GuiTest, IGN_UTILS_TEST_ENABLED_ONLY_ON_LINUX(PathManager))
+TEST_F(GuiTest, IGN_UTILS_TEST_DISABLED_ON_MAC(PathManager))
 {
   common::Console::SetVerbosity(4);
   igndbg << "Start test" << std::endl;
@@ -91,8 +90,7 @@ TEST_F(GuiTest, IGN_UTILS_TEST_ENABLED_ONLY_ON_LINUX(PathManager))
   node.Advertise("/gazebo/resource_paths/get", pathsCb);
   igndbg << "Paths advertised" << std::endl;
 
-  auto app = ignition::gazebo::gui::createGui(
-    gg_argc, gg_argv, nullptr, nullptr, false, nullptr);
+  auto app = ignition::gazebo::gui::createGui(gg_argc, gg_argv, nullptr);
   EXPECT_NE(nullptr, app);
   igndbg << "GUI created" << std::endl;
 

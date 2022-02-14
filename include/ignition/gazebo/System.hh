@@ -70,22 +70,22 @@ namespace ignition
     /// explains why UpdateInfo::simTime is initially 0 if simulation is started
     /// paused, while UpdateInfo::simTime is initially UpdateInfo::dt if
     /// simulation is started un-paused.
-    class System
+    class IGNITION_GAZEBO_VISIBLE System
     {
       /// \brief Constructor
-      public: System() = default;
+      public: System();
 
       /// \brief Destructor
-      public: virtual ~System() = default;
+      public: virtual ~System();
     };
 
     /// \class ISystemConfigure ISystem.hh ignition/gazebo/System.hh
     /// \brief Interface for a system that implements optional configuration
     ///
-    /// Configure is called after the system is instantiated and all entities
+    /// Configure is called after the system is instatiated and all entities
     /// and components are loaded from the corresponding SDF world, and before
     /// simulation begins exectution.
-    class ISystemConfigure {
+    class IGNITION_GAZEBO_VISIBLE ISystemConfigure {
       /// \brief Configure the system
       /// \param[in] _entity The entity this plugin is attached to.
       /// \param[in] _sdf The SDF Element associated with this system plugin.
@@ -102,21 +102,21 @@ namespace ignition
 
     /// \class ISystemPreUpdate ISystem.hh ignition/gazebo/System.hh
     /// \brief Interface for a system that uses the PreUpdate phase
-    class ISystemPreUpdate {
+    class IGNITION_GAZEBO_VISIBLE ISystemPreUpdate {
       public: virtual void PreUpdate(const UpdateInfo &_info,
                                      EntityComponentManager &_ecm) = 0;
     };
 
     /// \class ISystemUpdate ISystem.hh ignition/gazebo/System.hh
     /// \brief Interface for a system that uses the Update phase
-    class ISystemUpdate {
+    class IGNITION_GAZEBO_VISIBLE ISystemUpdate {
       public: virtual void Update(const UpdateInfo &_info,
                                   EntityComponentManager &_ecm) = 0;
     };
 
     /// \class ISystemPostUpdate ISystem.hh ignition/gazebo/System.hh
     /// \brief Interface for a system that uses the PostUpdate phase
-    class ISystemPostUpdate{
+    class IGNITION_GAZEBO_VISIBLE ISystemPostUpdate{
       public: virtual void PostUpdate(const UpdateInfo &_info,
                                       const EntityComponentManager &_ecm) = 0;
     };

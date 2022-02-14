@@ -360,9 +360,9 @@ void NetworkManagerPrimary::PopulateAffinities(
   {
     auto secondaryIt = this->secondaries.begin();
 
-    for (const auto &it : lToPNew)
+    for (const auto &[level, performers] : lToPNew)
     {
-      for (const auto &performer : it.second)
+      for (const auto &performer : performers)
       {
         this->SetAffinity(performer, secondaryIt->second->prefix,
             _msg.add_affinity());

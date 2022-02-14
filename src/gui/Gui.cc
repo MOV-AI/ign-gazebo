@@ -24,11 +24,12 @@
 #include <ignition/gui/Plugin.hh>
 
 #include "ignition/gazebo/config.hh"
-#include "ignition/gazebo/gui/Gui.hh"
+#include "ignition/gazebo/gui/GuiRunner.hh"
+#include "ignition/gazebo/gui/TmpIface.hh"
 
+#include "ignition/gazebo/gui/Gui.hh"
 #include "AboutDialogHandler.hh"
 #include "GuiFileHandler.hh"
-#include "GuiRunner.hh"
 #include "PathManager.hh"
 
 namespace ignition
@@ -39,11 +40,11 @@ namespace gazebo
 inline namespace IGNITION_GAZEBO_VERSION_NAMESPACE {
 namespace gui
 {
+
 //////////////////////////////////////////////////
 std::unique_ptr<ignition::gui::Application> createGui(
     int &_argc, char **_argv, const char *_guiConfig,
-    const char *_defaultGuiConfig, bool _loadPluginsFromSdf,
-    const char *_renderEngine)
+    const char *_defaultGuiConfig, bool _loadPluginsFromSdf)
 {
   ignition::common::SignalHandler sigHandler;
   bool sigKilled = false;
@@ -65,6 +66,10 @@ std::unique_ptr<ignition::gui::Application> createGui(
   auto app = std::make_unique<ignition::gui::Application>(_argc, _argv);
   app->AddPluginPath(IGN_GAZEBO_GUI_PLUGIN_INSTALL_DIR);
 
+  // Temporary transport interface
+  auto tmp = new ignition::gazebo::TmpIface();
+  tmp->setParent(app->Engine());
+
   auto aboutDialogHandler = new ignition::gazebo::gui::AboutDialogHandler();
   aboutDialogHandler->setParent(app->Engine());
 
@@ -80,10 +85,6 @@ std::unique_ptr<ignition::gui::Application> createGui(
 
   // Set default config file for Gazebo
   std::string defaultConfig;
-
-  // Default config folder.
-  std::string defaultConfigFolder;
-
   if (nullptr == _defaultGuiConfig)
   {
     // The playback flag (and not the gui-config flag) was
@@ -93,11 +94,8 @@ std::unique_ptr<ignition::gui::Application> createGui(
       defaultGuiConfigName = "playback_gui.config";
     }
     ignition::common::env(IGN_HOMEDIR, defaultConfig);
-    defaultConfigFolder =
-      ignition::common::joinPaths(defaultConfig, ".ignition",
-        "gazebo", IGNITION_GAZEBO_MAJOR_VERSION_STR);
-    defaultConfig = ignition::common::joinPaths(defaultConfigFolder,
-        defaultGuiConfigName);
+    defaultConfig = ignition::common::joinPaths(defaultConfig, ".ignition",
+        "gazebo", defaultGuiConfigName);
   }
   else
   {
@@ -108,15 +106,12 @@ std::unique_ptr<ignition::gui::Application> createGui(
 
   // Customize window
   auto mainWin = app->findChild<ignition::gui::MainWindow *>();
-  if (_renderEngine != nullptr)
-  {
-    mainWin->SetRenderEngine(_renderEngine);
-  }
   auto win = mainWin->QuickWindow();
   win->setProperty("title", "Gazebo");
 
-  // Let QML files use C++ functions and properties
+  // Let QML files use TmpIface' functions and properties
   auto context = new QQmlContext(app->Engine()->rootContext());
+  context->setContextProperty("TmpIface", tmp);
   context->setContextProperty("AboutDialogHandler", aboutDialogHandler);
   context->setContextProperty("GuiFileHandler", guiFileHandler);
 
@@ -269,27 +264,8 @@ std::unique_ptr<ignition::gui::Application> createGui(
     // the installed file there first.
     if (!ignition::common::exists(defaultConfig))
     {
-      if (!ignition::common::exists(defaultConfigFolder))
-      {
-        if (!ignition::common::createDirectories(defaultConfigFolder))
-        {
-          ignerr << "Failed to create the default config folder ["
-            << defaultConfigFolder << "]\n";
-          return nullptr;
-        }
-      }
-
       auto installedConfig = ignition::common::joinPaths(
           IGNITION_GAZEBO_GUI_CONFIG_PATH, defaultGuiConfigName);
-      if (!ignition::common::exists(installedConfig))
-      {
-        ignerr << "Failed to copy installed config [" << installedConfig
-               << "] to default config [" << defaultConfig << "]."
-               << "(file " << installedConfig << " doesn't exist)"
-               << std::endl;
-        return nullptr;
-      }
-
       if (!ignition::common::copyFile(installedConfig, defaultConfig))
       {
         ignerr << "Failed to copy installed config [" << installedConfig
@@ -305,7 +281,7 @@ std::unique_ptr<ignition::gui::Application> createGui(
       }
     }
 
-    // Also set ~/.ignition/gazebo/ver/gui.config as the default path
+    // Also set ~/.ignition/gazebo/gui.config as the default path
     if (!app->LoadConfig(defaultConfig))
     {
       ignerr << "Failed to load config file[" << defaultConfig << "]."
@@ -318,11 +294,9 @@ std::unique_ptr<ignition::gui::Application> createGui(
 }
 
 //////////////////////////////////////////////////
-int runGui(int &_argc, char **_argv, const char *_guiConfig,
-  const char *_renderEngine)
+int runGui(int &_argc, char **_argv, const char *_guiConfig)
 {
-  auto app = gazebo::gui::createGui(
-    _argc, _argv, _guiConfig, nullptr, true, _renderEngine);
+  auto app = gazebo::gui::createGui(_argc, _argv, _guiConfig);
   if (nullptr != app)
   {
     // Run main window.
@@ -331,8 +305,8 @@ int runGui(int &_argc, char **_argv, const char *_guiConfig,
     igndbg << "Shutting down ign-gazebo-gui" << std::endl;
     return 0;
   }
-
-  return -1;
+  else
+    return -1;
 }
 }  // namespace gui
 }  // namespace IGNITION_GAZEBO_VERSION_NAMESPACE

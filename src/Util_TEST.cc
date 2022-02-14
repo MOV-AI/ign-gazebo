@@ -19,7 +19,6 @@
 #include <ignition/common/Console.hh>
 #include <sdf/Actor.hh>
 #include <sdf/Light.hh>
-#include <sdf/Types.hh>
 
 #include "ignition/gazebo/components/Actor.hh"
 #include "ignition/gazebo/components/Collision.hh"
@@ -447,7 +446,7 @@ TEST_F(UtilTest, AsFullPath)
 
   // Data string
   {
-    const std::string path{sdf::kSdfStringSource};
+    const std::string path{"data-string"};
 
     EXPECT_EQ(relativeUriUnix, asFullPath(relativeUriUnix, path));
     EXPECT_EQ(relativeUriWindows, asFullPath(relativeUriWindows, path));

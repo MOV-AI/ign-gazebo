@@ -35,32 +35,32 @@
 #include "ignition/gazebo/gui/Gui.hh"
 
 //////////////////////////////////////////////////
-extern "C" char *ignitionGazeboVersion()
+extern "C" IGNITION_GAZEBO_VISIBLE char *ignitionGazeboVersion()
 {
   return strdup(IGNITION_GAZEBO_VERSION_FULL);
 }
 
 //////////////////////////////////////////////////
-extern "C" char *gazeboVersionHeader()
+extern "C" IGNITION_GAZEBO_VISIBLE char *gazeboVersionHeader()
 {
   return strdup(IGNITION_GAZEBO_VERSION_HEADER);
 }
 
 //////////////////////////////////////////////////
-extern "C" void cmdVerbosity(
+extern "C" IGNITION_GAZEBO_VISIBLE void cmdVerbosity(
     const char *_verbosity)
 {
   ignition::common::Console::SetVerbosity(std::atoi(_verbosity));
 }
 
 //////////////////////////////////////////////////
-extern "C" const char *worldInstallDir()
+extern "C" IGNITION_GAZEBO_VISIBLE const char *worldInstallDir()
 {
   return IGN_GAZEBO_WORLD_INSTALL_DIR;
 }
 
 //////////////////////////////////////////////////
-extern "C" const char *findFuelResource(
+extern "C" IGNITION_GAZEBO_VISIBLE const char *findFuelResource(
     char *_pathToResource)
 {
   std::string path;
@@ -115,14 +115,13 @@ extern "C" const char *findFuelResource(
 }
 
 //////////////////////////////////////////////////
-extern "C" int runServer(const char *_sdfString,
+extern "C" IGNITION_GAZEBO_VISIBLE int runServer(const char *_sdfString,
     int _iterations, int _run, float _hz, int _levels, const char *_networkRole,
     int _networkSecondaries, int _record, const char *_recordPath,
     int _recordResources, int _logOverwrite, int _logCompress,
     const char *_playback, const char *_physicsEngine,
     const char *_renderEngineServer, const char *_renderEngineGui,
-    const char *_file, const char *_recordTopics,
-    int _headless, int _networkRender)
+    const char *_file, const char *_recordTopics, int _networkRender)
 {
   ignition::gazebo::ServerConfig serverConfig;
 
@@ -339,8 +338,6 @@ extern "C" int runServer(const char *_sdfString,
     serverConfig.SetPhysicsEngine(_physicsEngine);
   }
 
-  serverConfig.SetHeadlessRendering(_headless);
-
   if (_renderEngineServer != nullptr && std::strlen(_renderEngineServer) > 0)
   {
     serverConfig.SetRenderEngineServer(_renderEngineServer);
@@ -362,7 +359,7 @@ extern "C" int runServer(const char *_sdfString,
 }
 
 //////////////////////////////////////////////////
-extern "C" int runGui(const char *_guiConfig, const char *_renderEngine)
+extern "C" IGNITION_GAZEBO_VISIBLE int runGui(const char *_guiConfig)
 {
   // argc and argv are going to be passed to a QApplication. The Qt
   // documentation has a warning about these:
@@ -375,6 +372,5 @@ extern "C" int runGui(const char *_guiConfig, const char *_renderEngine)
   // be converted to a const char *. The const cast is here to prevent a warning
   // since we do need to pass a char* to runGui
   char *argv = const_cast<char *>("ign-gazebo-gui");
-  return ignition::gazebo::gui::runGui(
-    argc, &argv, _guiConfig, _renderEngine);
+  return ignition::gazebo::gui::runGui(argc, &argv, _guiConfig);
 }

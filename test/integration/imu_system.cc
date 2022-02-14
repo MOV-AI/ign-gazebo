@@ -23,7 +23,6 @@
 #include <ignition/common/Util.hh>
 #include <ignition/math/Pose3.hh>
 #include <ignition/transport/Node.hh>
-#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "ignition/gazebo/components/AngularVelocity.hh"
 #include "ignition/gazebo/components/Gravity.hh"
@@ -63,8 +62,7 @@ void imuCb(const msgs::IMU &_msg)
 
 /////////////////////////////////////////////////
 // The test checks the world pose and sensor readings of a falling imu
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_F(ImuTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(ModelFalling))
+TEST_F(ImuTest, ModelFalling)
 {
   double z = 3;
   // TODO(anyone): get step size from sdf
@@ -91,7 +89,7 @@ TEST_F(ImuTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(ModelFalling))
   std::vector<math::Pose3d> poses;
   std::vector<math::Vector3d> accelerations;
   std::vector<math::Vector3d> angularVelocities;
-  testSystem.OnPostUpdate([&](const gazebo::UpdateInfo &_info,
+  testSystem.OnPostUpdate([&](const gazebo::UpdateInfo &,
                               const gazebo::EntityComponentManager &_ecm)
       {
         _ecm.Each<components::Imu,
@@ -115,10 +113,6 @@ TEST_F(ImuTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(ModelFalling))
               auto sensorComp = _ecm.Component<components::Sensor>(_entity);
               EXPECT_NE(nullptr, sensorComp);
 
-              if (_info.iterations == 1)
-                return true;
-
-              // This component is created on the 2nd PreUpdate
               auto topicComp = _ecm.Component<components::SensorTopic>(_entity);
               EXPECT_NE(nullptr, topicComp);
               if (topicComp)
@@ -185,7 +179,7 @@ TEST_F(ImuTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(ModelFalling))
   // Time to advance, allow 0.5 s settling time.
   // This assumes inelastic collisions with the ground.
   double dtHit = tHit + 0.5 - (iters200 + 1) * stepSize;
-  int steps = static_cast<int>(ceil(dtHit / stepSize));
+  double steps = ceil(dtHit / stepSize);
   ASSERT_GT(steps, 0);
   server.Run(true, steps, false);
 
@@ -215,7 +209,7 @@ TEST_F(ImuTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(ModelFalling))
 
 /////////////////////////////////////////////////
 // The test checks to make sure orientation is not published if it is deabled
-TEST_F(ImuTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(OrientationDisabled))
+TEST_F(ImuTest, OrientationDisabled)
 {
   imuMsgs.clear();
 

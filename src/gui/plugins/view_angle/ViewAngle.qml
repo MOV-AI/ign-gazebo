@@ -22,378 +22,308 @@ import QtQuick.Layouts 1.3
 import QtQuick.Controls.Styles 1.4
 import "qrc:/qml"
 
-ColumnLayout {
+ToolBar {
   Layout.minimumWidth: 320
-  Layout.minimumHeight: 530
+  Layout.minimumHeight: 380
   anchors.fill: parent
 
-  ToolBar {
-    Layout.fillWidth: true
-    background: Rectangle {
-      color: "transparent"
-    }
-
-    ButtonGroup {
-      id: group
-    }
-
-    GridLayout {
-      id: views
-      anchors.horizontalCenter: parent.horizontalCenter
-      columns: 4
-      ToolButton {
-        id: top
-        checkable: true
-        ButtonGroup.group: group
-        ToolTip.text: "View from the top"
-        ToolTip.visible: hovered
-        ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
-        Layout.row: 0
-        Layout.column: 1
-        contentItem: Image {
-          fillMode: Image.Pad
-          horizontalAlignment: Image.AlignHCenter
-          verticalAlignment: Image.AlignVCenter
-          source: "view_angle_top.png"
-          sourceSize.width: 24;
-          sourceSize.height: 24;
-        }
-        onClicked: {
-          ViewAngle.OnAngleMode(0, 0, -1)
-        }
-      }
-      ToolButton {
-        id: home
-        checkable: true
-        ButtonGroup.group: group
-        ToolTip.text: "Reset View Angle"
-        ToolTip.visible: hovered
-        ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
-        Layout.row: 0
-        Layout.column: 3
-        contentItem: Image {
-          fillMode: Image.Pad
-          horizontalAlignment: Image.AlignHCenter
-          verticalAlignment: Image.AlignVCenter
-          source: "view_angle_home.png"
-          sourceSize.width: 24;
-          sourceSize.height: 24;
-        }
-        onClicked: {
-          ViewAngle.OnAngleMode(0, 0, 0)
-        }
-      }
-      ToolButton {
-        id: left
-        checkable: true
-        ButtonGroup.group: group
-        ToolTip.text: "View from the left"
-        ToolTip.visible: hovered
-        ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
-        Layout.row: 1
-        Layout.column: 0
-        contentItem: Image {
-          fillMode: Image.Pad
-          horizontalAlignment: Image.AlignHCenter
-          verticalAlignment: Image.AlignVCenter
-          source: "view_angle_left.png"
-          sourceSize.width: 24;
-          sourceSize.height: 24;
-        }
-        onClicked: {
-          ViewAngle.OnAngleMode(0, 1, 0)
-        }
-      }
-      ToolButton {
-        id: front
-        checkable: true
-        ButtonGroup.group: group
-        ToolTip.text: "View from the front"
-        ToolTip.visible: hovered
-        ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
-        Layout.row: 1
-        Layout.column: 1
-        contentItem: Image {
-          fillMode: Image.Pad
-          horizontalAlignment: Image.AlignHCenter
-          verticalAlignment: Image.AlignVCenter
-          source: "view_angle_front.png"
-          sourceSize.width: 24;
-          sourceSize.height: 24;
-        }
-        onClicked: {
-          ViewAngle.OnAngleMode(-1, 0, 0)
-        }
-      }
-      ToolButton {
-        id: right
-        checkable: true
-        ButtonGroup.group: group
-        ToolTip.text: "View from the right"
-        ToolTip.visible: hovered
-        ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
-        Layout.row: 1
-        Layout.column: 2
-        contentItem: Image {
-          fillMode: Image.Pad
-          horizontalAlignment: Image.AlignHCenter
-          verticalAlignment: Image.AlignVCenter
-          source: "view_angle_right.png"
-          sourceSize.width: 24;
-          sourceSize.height: 24;
-        }
-        onClicked: {
-          ViewAngle.OnAngleMode(0, -1, 0)
-        }
-      }
-      ToolButton {
-        id: back
-        checkable: true
-        ButtonGroup.group: group
-        ToolTip.text: "View from the back"
-        ToolTip.visible: hovered
-        ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
-        Layout.row: 1
-        Layout.column: 3
-        contentItem: Image {
-          fillMode: Image.Pad
-          horizontalAlignment: Image.AlignHCenter
-          verticalAlignment: Image.AlignVCenter
-          source: "view_angle_back.png"
-          sourceSize.width: 24;
-          sourceSize.height: 24;
-        }
-        onClicked: {
-          ViewAngle.OnAngleMode(1, 0, 0)
-        }
-      }
-      ToolButton {
-        id: bottom
-        checkable: true
-        ButtonGroup.group: group
-        ToolTip.text: "View from the bottom"
-        ToolTip.visible: hovered
-        ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
-        Layout.row: 2
-        Layout.column: 1
-        contentItem: Image {
-          fillMode: Image.Pad
-          horizontalAlignment: Image.AlignHCenter
-          verticalAlignment: Image.AlignVCenter
-          source: "view_angle_bottom.png"
-          sourceSize.width: 24;
-          sourceSize.height: 24;
-        }
-        onClicked: {
-          ViewAngle.OnAngleMode(0, 0, 1)
-        }
-      }
-    }
+  background: Rectangle {
+    color: "transparent"
   }
 
-  // Projection
-  ComboBox {
-    currentIndex: 0
-    model: ListModel {
-        id: controller
-        ListElement {text: "Orbit View Control"}
-        ListElement {text: "Orthographic View Control"}
-    }
-    Layout.fillWidth: true
-    Layout.minimumWidth: 280
-    Layout.margins: 10
-    onCurrentIndexChanged: {
-        ViewAngle.OnViewControl(controller.get(currentIndex).text)
-    }
-  }
-
-  // Set camera pose
-  Text {
-    text: "Camera Pose"
-    Layout.fillWidth: true
-    color: Material.Grey
-    leftPadding: 5
-    font.bold: true
+  ButtonGroup {
+    id: group
   }
 
   GridLayout {
+    id: views
+    anchors.horizontalCenter: parent.horizontalCenter
+    columns: 8
+    ToolButton {
+      id: top
+      checkable: true
+      ButtonGroup.group: group
+      ToolTip.text: "View from the top"
+      ToolTip.visible: hovered
+      ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+      Layout.row: 0
+      Layout.column: 1
+      contentItem: Image {
+        fillMode: Image.Pad
+        horizontalAlignment: Image.AlignHCenter
+        verticalAlignment: Image.AlignVCenter
+        source: "view_angle_top.png"
+        sourceSize.width: 24;
+        sourceSize.height: 24;
+      }
+      onClicked: {
+        ViewAngle.OnAngleMode(0, 0, -1)
+      }
+    }
+    ToolButton {
+      id: home
+      checkable: true
+      ButtonGroup.group: group
+      ToolTip.text: "Reset View Angle"
+      ToolTip.visible: hovered
+      ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+      Layout.row: 0
+      Layout.column: 3
+      contentItem: Image {
+        fillMode: Image.Pad
+        horizontalAlignment: Image.AlignHCenter
+        verticalAlignment: Image.AlignVCenter
+        source: "view_angle_home.png"
+        sourceSize.width: 24;
+        sourceSize.height: 24;
+      }
+      onClicked: {
+        ViewAngle.OnAngleMode(0, 0, 0)
+      }
+    }
+    ToolButton {
+      id: left
+      checkable: true
+      ButtonGroup.group: group
+      ToolTip.text: "View from the left"
+      ToolTip.visible: hovered
+      ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+      Layout.row: 1
+      Layout.column: 0
+      contentItem: Image {
+        fillMode: Image.Pad
+        horizontalAlignment: Image.AlignHCenter
+        verticalAlignment: Image.AlignVCenter
+        source: "view_angle_left.png"
+        sourceSize.width: 24;
+        sourceSize.height: 24;
+      }
+      onClicked: {
+        ViewAngle.OnAngleMode(0, 1, 0)
+      }
+    }
+    ToolButton {
+      id: front
+      checkable: true
+      ButtonGroup.group: group
+      ToolTip.text: "View from the front"
+      ToolTip.visible: hovered
+      ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+      Layout.row: 1
+      Layout.column: 1
+      contentItem: Image {
+        fillMode: Image.Pad
+        horizontalAlignment: Image.AlignHCenter
+        verticalAlignment: Image.AlignVCenter
+        source: "view_angle_front.png"
+        sourceSize.width: 24;
+        sourceSize.height: 24;
+      }
+      onClicked: {
+        ViewAngle.OnAngleMode(-1, 0, 0)
+      }
+    }
+    ToolButton {
+      id: right
+      checkable: true
+      ButtonGroup.group: group
+      ToolTip.text: "View from the right"
+      ToolTip.visible: hovered
+      ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+      Layout.row: 1
+      Layout.column: 2
+      contentItem: Image {
+        fillMode: Image.Pad
+        horizontalAlignment: Image.AlignHCenter
+        verticalAlignment: Image.AlignVCenter
+        source: "view_angle_right.png"
+        sourceSize.width: 24;
+        sourceSize.height: 24;
+      }
+      onClicked: {
+        ViewAngle.OnAngleMode(0, -1, 0)
+      }
+    }
+    ToolButton {
+      id: back
+      checkable: true
+      ButtonGroup.group: group
+      ToolTip.text: "View from the back"
+      ToolTip.visible: hovered
+      ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+      Layout.row: 1
+      Layout.column: 3
+      contentItem: Image {
+        fillMode: Image.Pad
+        horizontalAlignment: Image.AlignHCenter
+        verticalAlignment: Image.AlignVCenter
+        source: "view_angle_back.png"
+        sourceSize.width: 24;
+        sourceSize.height: 24;
+      }
+      onClicked: {
+        ViewAngle.OnAngleMode(1, 0, 0)
+      }
+    }
+    ToolButton {
+      id: bottom
+      checkable: true
+      ButtonGroup.group: group
+      ToolTip.text: "View from the bottom"
+      ToolTip.visible: hovered
+      ToolTip.delay: Qt.styleHints.mousePressAndHoldInterval
+      Layout.row: 2
+      Layout.column: 1
+      contentItem: Image {
+        fillMode: Image.Pad
+        horizontalAlignment: Image.AlignHCenter
+        verticalAlignment: Image.AlignVCenter
+        source: "view_angle_bottom.png"
+        sourceSize.width: 24;
+        sourceSize.height: 24;
+      }
+      onClicked: {
+        ViewAngle.OnAngleMode(0, 0, 1)
+      }
+    }
+  }
+
+  // set camera pose
+  Rectangle {
+    y: views.height + 10
     width: parent.width
-    columns: 6
+    color: "transparent"
 
-    Text {
-      text: "X (m)"
-      color: "dimgrey"
-      Layout.row: 0
-      Layout.column: 0
-      leftPadding: 5
-    }
-    IgnSpinBox {
-      id: x
-      Layout.fillWidth: true
-      Layout.row: 0
-      Layout.column: 1
-      value: ViewAngle.camPose[0]
-      maximumValue: Number.MAX_VALUE
-      minimumValue: -Number.MAX_VALUE
-      decimals: 6
-      stepSize: 0.01
-      onEditingFinished: ViewAngle.SetCamPose(x.value, y.value, z.value, roll.value, pitch.value, yaw.value)
-    }
-    Text {
-      text: "Y (m)"
-      color: "dimgrey"
-      Layout.row: 1
-      Layout.column: 0
-      leftPadding: 5
-    }
-    IgnSpinBox {
-      id: y
-      Layout.fillWidth: true
-      Layout.row: 1
-      Layout.column: 1
-      value: ViewAngle.camPose[1]
-      maximumValue: Number.MAX_VALUE
-      minimumValue: -Number.MAX_VALUE
-      decimals: 6
-      stepSize: 0.01
-      onEditingFinished: ViewAngle.SetCamPose(x.value, y.value, z.value, roll.value, pitch.value, yaw.value)
-    }
-    Text {
-      text: "Z (m)"
-      color: "dimgrey"
-      Layout.row: 2
-      Layout.column: 0
-      leftPadding: 5
-    }
-    IgnSpinBox {
-      id: z
-      Layout.fillWidth: true
-      Layout.row: 2
-      Layout.column: 1
-      value: ViewAngle.camPose[2]
-      maximumValue: Number.MAX_VALUE
-      minimumValue: -Number.MAX_VALUE
-      decimals: 6
-      stepSize: 0.01
-      onEditingFinished: ViewAngle.SetCamPose(x.value, y.value, z.value, roll.value, pitch.value, yaw.value)
-    }
+    ColumnLayout {
+      width: parent.width
+      Text {
+        text: "Camera Pose"
+        color: Material.Grey
+        Layout.row: 4
+        Layout.column: 1
+        leftPadding: 5
+      }
 
-    Text {
-      text: "Roll (rad)"
-      color: "dimgrey"
-      Layout.row: 0
-      Layout.column: 2
-      leftPadding: 5
-    }
-    IgnSpinBox {
-      id: roll
-      Layout.fillWidth: true
-      Layout.row: 0
-      Layout.column: 3
-      value: ViewAngle.camPose[3]
-      maximumValue: 6.28
-      minimumValue: -6.28
-      decimals: 6
-      stepSize: 0.01
-      onEditingFinished: ViewAngle.SetCamPose(x.value, y.value, z.value, roll.value, pitch.value, yaw.value)
-    }
-    Text {
-      text: "Pitch (rad)"
-      color: "dimgrey"
-      Layout.row: 1
-      Layout.column: 2
-      leftPadding: 5
-    }
-    IgnSpinBox {
-      id: pitch
-      Layout.fillWidth: true
-      Layout.row: 1
-      Layout.column: 3
-      value: ViewAngle.camPose[4]
-      maximumValue: 6.28
-      minimumValue: -6.28
-      decimals: 6
-      stepSize: 0.01
-      onEditingFinished: ViewAngle.SetCamPose(x.value, y.value, z.value, roll.value, pitch.value, yaw.value)
-    }
-    Text {
-      text: "Yaw (rad)"
-      color: "dimgrey"
-      Layout.row: 2
-      Layout.column: 2
-      leftPadding: 5
-    }
-    IgnSpinBox {
-      id: yaw
-      Layout.fillWidth: true
-      Layout.row: 2
-      Layout.column: 3
-      value: ViewAngle.camPose[5]
-      maximumValue: 6.28
-      minimumValue: -6.28
-      decimals: 6
-      stepSize: 0.01
-      onEditingFinished: ViewAngle.SetCamPose(x.value, y.value, z.value, roll.value, pitch.value, yaw.value)
-    }
-  }
+      GridLayout {
+        width: parent.width
+        columns: 6
 
-  // Set camera's near/far clipping distance
-  Text {
-    text: "Camera's clipping plane distance"
-    Layout.fillWidth: true
-    color: Material.Grey
-    leftPadding: 5
-    topPadding: 10
-    font.bold: true
-  }
+        Text {
+          text: "X (m)"
+          color: "dimgrey"
+          Layout.row: 4
+          Layout.column: 1
+          leftPadding: 5
+        }
+        IgnSpinBox {
+          id: x
+          Layout.fillWidth: true
+          Layout.row: 4
+          Layout.column: 2
+          value: ViewAngle.camPose[0]
+          maximumValue: 1000000
+          minimumValue: -1000000
+          decimals: 6
+          stepSize: 0.01
+          onEditingFinished: ViewAngle.SetCamPose(x.value, y.value, z.value, roll.value, pitch.value, yaw.value)
+        }
+        Text {
+          text: "Y (m)"
+          color: "dimgrey"
+          Layout.row: 5
+          Layout.column: 1
+          leftPadding: 5
+        }
+        IgnSpinBox {
+          id: y
+          Layout.fillWidth: true
+          Layout.row: 5
+          Layout.column: 2
+          value: ViewAngle.camPose[1]
+          maximumValue: 1000000
+          minimumValue: -1000000
+          decimals: 6
+          stepSize: 0.01
+          onEditingFinished: ViewAngle.SetCamPose(x.value, y.value, z.value, roll.value, pitch.value, yaw.value)
+        }
+        Text {
+          text: "Z (m)"
+          color: "dimgrey"
+          Layout.row: 6
+          Layout.column: 1
+          leftPadding: 5
+        }
+        IgnSpinBox {
+          id: z
+          Layout.fillWidth: true
+          Layout.row: 6
+          Layout.column: 2
+          value: ViewAngle.camPose[2]
+          maximumValue: 1000000
+          minimumValue: -1000000
+          decimals: 6
+          stepSize: 0.01
+          onEditingFinished: ViewAngle.SetCamPose(x.value, y.value, z.value, roll.value, pitch.value, yaw.value)
+        }
 
-  GridLayout {
-    width: parent.width
-    columns: 4
-
-    Text {
-      text: "Near (m)"
-      color: "dimgrey"
-      Layout.row: 0
-      Layout.column: 0
-      leftPadding: 5
+        Text {
+          text: "Roll (rad)"
+          color: "dimgrey"
+          Layout.row: 4
+          Layout.column: 3
+          leftPadding: 5
+        }
+        IgnSpinBox {
+          id: roll
+          Layout.fillWidth: true
+          Layout.row: 4
+          Layout.column: 4
+          value: ViewAngle.camPose[3]
+          maximumValue: 6.28
+          minimumValue: -6.28
+          decimals: 6
+          stepSize: 0.01
+          onEditingFinished: ViewAngle.SetCamPose(x.value, y.value, z.value, roll.value, pitch.value, yaw.value)
+        }
+        Text {
+          text: "Pitch (rad)"
+          color: "dimgrey"
+          Layout.row: 5
+          Layout.column: 3
+          leftPadding: 5
+        }
+        IgnSpinBox {
+          id: pitch
+          Layout.fillWidth: true
+          Layout.row: 5
+          Layout.column: 4
+          value: ViewAngle.camPose[4]
+          maximumValue: 6.28
+          minimumValue: -6.28
+          decimals: 6
+          stepSize: 0.01
+          onEditingFinished: ViewAngle.SetCamPose(x.value, y.value, z.value, roll.value, pitch.value, yaw.value)
+        }
+        Text {
+          text: "Yaw (rad)"
+          color: "dimgrey"
+          Layout.row: 6
+          Layout.column: 3
+          leftPadding: 5
+        }
+        IgnSpinBox {
+          id: yaw
+          Layout.fillWidth: true
+          Layout.row: 6
+          Layout.column: 4
+          value: ViewAngle.camPose[5]
+          maximumValue: 6.28
+          minimumValue: -6.28
+          decimals: 6
+          stepSize: 0.01
+          onEditingFinished: ViewAngle.SetCamPose(x.value, y.value, z.value, roll.value, pitch.value, yaw.value)
+        }
+      }
     }
-    IgnSpinBox {
-      id: nearClip
-      Layout.fillWidth: true
-      Layout.row: 0
-      Layout.column: 1
-      value: ViewAngle.camClipDist[0]
-      maximumValue: farClip.value
-      minimumValue: 0.000001
-      decimals: 6
-      stepSize: 0.01
-      onEditingFinished: ViewAngle.SetCamClipDist(nearClip.value, farClip.value)
-    }
-    Text {
-      text: "Far (m)"
-      color: "dimgrey"
-      Layout.row: 0
-      Layout.column: 2
-      leftPadding: 5
-    }
-    IgnSpinBox {
-      id: farClip
-      Layout.fillWidth: true
-      Layout.row: 0
-      Layout.column: 3
-      value: ViewAngle.camClipDist[1]
-      maximumValue: Number.MAX_VALUE
-      minimumValue: nearClip.value
-      decimals: 6
-      stepSize: 0.01
-      onEditingFinished: ViewAngle.SetCamClipDist(nearClip.value, farClip.value)
-    }
-  }
-
-  // Bottom spacer
-  Item {
-    width: 10
-    Layout.fillHeight: true
   }
 }

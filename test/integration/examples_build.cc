@@ -22,7 +22,6 @@
 #include <ignition/common/Util.hh>
 #include <ignition/common/Filesystem.hh>
 #include <ignition/math/SemanticVersion.hh>
-#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include "ignition/gazebo/test_config.hh"
 #include "../helpers/EnvTestFixture.hh"
@@ -81,6 +80,7 @@ bool createAndSwitchToTempDir(std::string &_newTempPath)
 #include <windows.h>  // NOLINT(build/include_order)
 #include <winnt.h>  // NOLINT(build/include_order)
 #include <cstdint>
+#include <ignition/common/PrintWindowsSystemWarning.hh>
 
 /////////////////////////////////////////////////
 bool createAndSwitchToTempDir(std::string &_newTempPath)
@@ -148,13 +148,10 @@ void ExamplesBuild::Build(const std::string &_type)
     auto base = ignition::common::basename(*dirIter);
 
     math::SemanticVersion cmakeVersion{std::string(CMAKE_VERSION)};
-    if (cmakeVersion < math::SemanticVersion(3, 11, 0) &&
-        (base == "custom_sensor_system" ||
-         base == "gtest_setup"))
+    if (base == "gtest_setup" && cmakeVersion < math::SemanticVersion(3, 11, 0))
     {
-      igndbg << "Skipping [" << base << "] test, which requires CMake version "
-             << ">= 3.11.0. Currently using CMake " << cmakeVersion
-             << std::endl;
+      igndbg << "Skipping [gtest_setup] test, which requires CMake version >= "
+             << "3.11.0. Currently using CMake " << cmakeVersion << std::endl;
       continue;
     }
 
@@ -183,8 +180,7 @@ void ExamplesBuild::Build(const std::string &_type)
 }
 
 //////////////////////////////////////////////////
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_P(ExamplesBuild, IGN_UTILS_TEST_DISABLED_ON_WIN32(Build))
+TEST_P(ExamplesBuild, Build)
 {
   Build(GetParam());
 }

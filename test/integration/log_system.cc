@@ -37,7 +37,6 @@
 #include <ignition/transport/log/Playback.hh>
 #include <ignition/transport/log/QualifiedTime.hh>
 #include <ignition/math/Pose3.hh>
-#include <ignition/utilities/ExtraTestMacros.hh>
 
 #include <sdf/Root.hh>
 #include <sdf/World.hh>
@@ -263,10 +262,8 @@ class LogSystemTest : public InternalFixture<::testing::Test>
 };
 
 /////////////////////////////////////////////////
-// See https://github.com/ignitionrobotics/ign-gazebo/issues/1175
-TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogPlaybackStatistics))
+TEST_F(LogSystemTest, LogPlaybackStatistics)
 {
-  // TODO(anyone) see LogSystemTest.LogControl comment about re-recording
   auto logPath = common::joinPaths(PROJECT_SOURCE_PATH, "test", "media",
       "rolling_shapes_log");
 
@@ -310,13 +307,13 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogPlaybackStatistics))
 
   EXPECT_EQ(0, startTimePair.first);
   EXPECT_EQ(0, startTimePair.second);
-  EXPECT_EQ(5, endTimePair.first);
-  EXPECT_EQ(800000000, endTimePair.second);
+  EXPECT_EQ(9, endTimePair.first);
+  EXPECT_EQ(721000000, endTimePair.second);
 }
 
 /////////////////////////////////////////////////
 // Logging behavior when no paths are specified
-TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogDefaults))
+TEST_F(LogSystemTest, LogDefaults)
 {
   // Create temp directory to store log
   this->CreateLogsDir();
@@ -420,7 +417,7 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogDefaults))
 /////////////////////////////////////////////////
 // Logging behavior when a path is specified either via the C++ API, SDF, or
 // the command line.
-TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogPaths))
+TEST_F(LogSystemTest, LogPaths)
 {
   // Create temp directory to store log
   this->CreateLogsDir();
@@ -689,12 +686,14 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogPaths))
 }
 
 /////////////////////////////////////////////////
-TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(RecordAndPlayback))
+TEST_F(LogSystemTest, RecordAndPlayback)
 {
   // Create temp directory to store log
   this->CreateLogsDir();
 
-  int numIterations = 1000;
+  // Used to count the expected number of poses recorded. Counting is necessary
+  // as the number varied depending on the CPU load.
+  int expectedPoseCount = 0;
   // Record
   {
     // World with moving entities
@@ -707,9 +706,26 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(RecordAndPlayback))
     recordServerConfig.SetUseLogRecord(true);
     recordServerConfig.SetLogRecordPath(this->logDir);
 
-    // Run for a number of iterations to record different poses
+    std::chrono::steady_clock::time_point lastPoseTime;
+    const int poseHz = 60;
+    const std::chrono::duration<double> msgPeriod{1.0 / poseHz};
+    // This system counts the expected number of poses recorded by reproducing
+    // the throttle mechanism used by ign-transport.
+    test::Relay recordedPoseCounter;
+    recordedPoseCounter.OnPostUpdate(
+        [&](const UpdateInfo &, const EntityComponentManager &)
+        {
+          auto tNow = std::chrono::steady_clock::now();
+          if ((tNow - lastPoseTime) > msgPeriod)
+          {
+            lastPoseTime = tNow;
+            ++expectedPoseCount;
+          }
+        });
+    // Run for a few seconds to record different poses
     Server recordServer(recordServerConfig);
-    recordServer.Run(true, numIterations, false);
+    recordServer.AddSystem(recordedPoseCounter.systemPtr);
+    recordServer.Run(true, 1000, false);
   }
 
   // Verify file is created
@@ -759,6 +775,46 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(RecordAndPlayback))
   EXPECT_EQ(32, stateMsg.entities_size());
   EXPECT_NE(batch.end(), ++recordedIter);
 
+  // check rest of recordIter (state message) for poses
+  while (batch.end() != recordedIter)
+  {
+    EXPECT_EQ("ignition.msgs.SerializedStateMap", recordedIter->Type());
+    EXPECT_EQ(recordedIter->Topic(), "/world/log_pendulum/changed_state");
+
+    stateMsg.ParseFromString(recordedIter->Data());
+
+    for (const auto &entityIter : stateMsg.entities())
+    {
+      for (const auto &compIter : entityIter.second.components())
+      {
+        EXPECT_EQ(components::Pose::typeId, compIter.second.type());
+      }
+    }
+    ++recordedIter;
+  }
+
+  EXPECT_EQ(batch.end(), recordedIter);
+
+  // Keep track of total number of pose comparisons
+  int nTotal{0};
+
+  // Check poses
+  batch = log.QueryMessages(transport::log::TopicPattern(
+      std::regex(".*/dynamic_pose/info")));
+  recordedIter = batch.begin();
+  EXPECT_NE(batch.end(), recordedIter);
+  EXPECT_EQ("ignition.msgs.Pose_V", recordedIter->Type());
+
+  // First pose at 1ms time, both from log clock and header
+  EXPECT_EQ(1000000, recordedIter->TimeReceived().count());
+
+  msgs::Pose_V recordedMsg;
+  recordedMsg.ParseFromString(recordedIter->Data());
+  ASSERT_TRUE(recordedMsg.has_header());
+  ASSERT_TRUE(recordedMsg.header().has_stamp());
+  EXPECT_EQ(0, recordedMsg.header().stamp().sec());
+  EXPECT_EQ(1000000, recordedMsg.header().stamp().nsec());
+
   // Playback config
   ServerConfig playServerConfig;
   playServerConfig.SetLogPlaybackPath(logPlaybackDir);
@@ -767,59 +823,68 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(RecordAndPlayback))
   Server playServer(playServerConfig);
 
   // Callback function for entities played back
-  // Compare current pose being played back with the pose from the stateMsg
+  // Compare current pose being played back with the pose with the closest
+  //   timestamp in the recorded file.
   test::Relay playbackPoseTester;
   playbackPoseTester.OnPostUpdate(
-      [&](const UpdateInfo &, const EntityComponentManager &_ecm)
+      [&](const UpdateInfo &_info, const EntityComponentManager &_ecm)
       {
         // Playback continues even after the log file is over
         if (batch.end() == recordedIter)
           return;
 
         // Get next recorded message
-        EXPECT_EQ("ignition.msgs.SerializedStateMap", recordedIter->Type());
-        EXPECT_EQ(recordedIter->Topic(), "/world/log_pendulum/changed_state");
-        stateMsg.ParseFromString(recordedIter->Data());
+        EXPECT_EQ("ignition.msgs.Pose_V", recordedIter->Type());
+        recordedMsg.ParseFromString(recordedIter->Data());
+
+        ASSERT_TRUE(recordedMsg.has_header());
+        ASSERT_TRUE(recordedMsg.header().has_stamp());
+        EXPECT_EQ(0, recordedMsg.header().stamp().sec());
+
+        // Log clock timestamp matches message timestamp
+        EXPECT_EQ(recordedMsg.header().stamp().nsec(),
+            recordedIter->TimeReceived().count());
+
+        // A recorded messages is matched when its timestamp is within 100us
+        // of the current iteration's sim time.
+        if (std::abs((_info.simTime - recordedIter->TimeReceived()).count()) >
+            100000)
+        {
+          return;
+        }
+
+        // Has 6 dynamic entities: 4 in dbl pendulum and 2 in nested model
+        EXPECT_EQ(6, recordedMsg.pose_size());
 
         // Loop through all recorded poses, and check them against the
         // playedback poses.
-        for (const auto &entityIter : stateMsg.entities())
+        for (int i = 0; i < recordedMsg.pose_size(); ++i)
         {
-          Entity entity = entityIter.second.id();
-          auto nameComp = _ecm.Component<components::Name>(entity);
-          ASSERT_NE(nullptr, nameComp);
-          const std::string &name = nameComp->Data();
+          const math::Pose3d &poseRecorded = msgs::Convert(recordedMsg.pose(i));
+          const std::string &name = recordedMsg.pose(i).name();
 
+          auto entity = _ecm.EntityByComponents(
+              components::Name(recordedMsg.pose(i).name()));
+          ASSERT_NE(kNullEntity, entity);
           auto poseComp = _ecm.Component<components::Pose>(entity);
           ASSERT_NE(nullptr, poseComp);
-          const math::Pose3d &posePlayed = poseComp->Data();
+          const auto &posePlayed = poseComp->Data();
 
-          for (const auto &compIter : entityIter.second.components())
-          {
-            msgs::SerializedComponent compMsg = compIter.second;
-            ASSERT_EQ(components::Pose::typeId, compMsg.type());
+          EXPECT_NEAR(posePlayed.Pos().X(), poseRecorded.Pos().X(), 0.1)
+            << name;
+          EXPECT_NEAR(posePlayed.Pos().Y(), poseRecorded.Pos().Y(), 0.1)
+            << name;
+          EXPECT_NEAR(posePlayed.Pos().Z(), poseRecorded.Pos().Z(), 0.1)
+            << name;
 
-            components::Pose pose;
-            std::istringstream istr(compMsg.component());
-            pose.Deserialize(istr);
-            const math::Pose3d &poseRecorded = pose.Data();
-
-            EXPECT_NEAR(posePlayed.Pos().X(), poseRecorded.Pos().X(), 0.1)
-              << name;
-            EXPECT_NEAR(posePlayed.Pos().Y(), poseRecorded.Pos().Y(), 0.1)
-              << name;
-            EXPECT_NEAR(posePlayed.Pos().Z(), poseRecorded.Pos().Z(), 0.1)
-              << name;
-
-            EXPECT_NEAR(posePlayed.Rot().Roll(),
-                        poseRecorded.Rot().Roll(), 0.1) << name;
-            EXPECT_NEAR(posePlayed.Rot().Pitch(),
-                        poseRecorded.Rot().Pitch(), 0.1) << name;
-            EXPECT_NEAR(posePlayed.Rot().Yaw(),
-                        poseRecorded.Rot().Yaw(), 0.1) << name;
-
-          }
+          EXPECT_NEAR(posePlayed.Rot().Roll(), poseRecorded.Rot().Roll(), 0.1)
+            << name;
+          EXPECT_NEAR(posePlayed.Rot().Pitch(), poseRecorded.Rot().Pitch(), 0.1)
+            << name;
+          EXPECT_NEAR(posePlayed.Rot().Yaw(), poseRecorded.Rot().Yaw(), 0.1)
+            << name;
         }
+
         ++recordedIter;
       });
 
@@ -829,24 +894,22 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(RecordAndPlayback))
   // checked in the playbackPoseTester
   playServer.Run(true, 500, false);
 
-  // Count the total number of state messages in the log file
-  int nTotal{0};
+  // Count the total number of pose messages in the log file
   for (auto it = batch.begin(); it != batch.end(); ++it, ++nTotal) { }
 
-  EXPECT_EQ(numIterations, nTotal);
+  // The expectedPoseCount might be off by ±2 because the ign transport's
+  // throttle mechanism (which is used by the SceneBroadcaster when publishing
+  // poses) uses real-time
+  EXPECT_LE(std::abs(nTotal - expectedPoseCount), 2)
+      << "nTotal [" << nTotal << "] expectedPoseCount [" << expectedPoseCount
+      << "]";
 
   this->RemoveLogsDir();
 }
 
 /////////////////////////////////////////////////
-TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogControl))
+TEST_F(LogSystemTest, LogControl)
 {
-  // TODO(anyone) when re-recording state.tlog file, do not run
-  // `ign gazebo --record rolling_shapes.sdf` with `-r` flag and pause sim
-  // before terminating. For some reason, when running with `-r` &/or
-  // terminating sim w/o pausing causing strange pose behavior
-  // when seeking close to end of file followed by rewind. For more details:
-  // https://github.com/ignitionrobotics/ign-gazebo/pull/839
   auto logPath = common::joinPaths(PROJECT_SOURCE_PATH, "test", "media",
       "rolling_shapes_log");
 
@@ -889,7 +952,7 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogControl))
   transport::Node node;
 
   // Seek forward (downhill)
-  std::vector<int> secs(5);
+  std::vector<int> secs(9);
   std::iota(std::begin(secs), std::end(secs), 1);
 
   msgs::LogPlaybackControl req;
@@ -959,7 +1022,7 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogControl))
 }
 
 /////////////////////////////////////////////////
-TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogOverwrite))
+TEST_F(LogSystemTest, LogOverwrite)
 {
   // Create temp directory to store log
   this->CreateLogsDir();
@@ -1108,7 +1171,7 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogOverwrite))
 }
 
 /////////////////////////////////////////////////
-TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogControlLevels))
+TEST_F(LogSystemTest, LogControlLevels)
 {
   auto logPath = common::joinPaths(PROJECT_SOURCE_PATH, "test", "media",
       "levels_log");
@@ -1139,8 +1202,8 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogControlLevels))
   // verify there are entities at the beginning of the playback
   EXPECT_TRUE(!entitiesAtTime0.empty());
 
-  int timeA = 8;
-  int timeB = 18;
+  double timeA = 8;
+  double timeB = 18;
 
   transport::Node node;
 
@@ -1247,7 +1310,7 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogControlLevels))
 }
 
 /////////////////////////////////////////////////
-TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogCompress))
+TEST_F(LogSystemTest, LogCompress)
 {
   // Create temp directory to store log
   this->CreateLogsDir();
@@ -1353,7 +1416,7 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogCompress))
 }
 
 /////////////////////////////////////////////////
-TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogCompressOverwrite))
+TEST_F(LogSystemTest, LogCompressOverwrite)
 {
   // Create temp directory to store log
   this->CreateLogsDir();
@@ -1399,7 +1462,7 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogCompressOverwrite))
 }
 
 /////////////////////////////////////////////////
-TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogCompressCmdLine))
+TEST_F(LogSystemTest, LogCompressCmdLine)
 {
 #ifndef __APPLE__
   // Create temp directory to store log
@@ -1479,7 +1542,7 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogCompressCmdLine))
 }
 
 /////////////////////////////////////////////////
-TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogResources))
+TEST_F(LogSystemTest, LogResources)
 {
   // Create temp directory to store log
   this->CreateLogsDir();
@@ -1566,7 +1629,7 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogResources))
 }
 
 /////////////////////////////////////////////////
-TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogTopics))
+TEST_F(LogSystemTest, LogTopics)
 {
   // Create temp directory to store log
   this->CreateLogsDir();
@@ -1612,8 +1675,8 @@ TEST_F(LogSystemTest, IGN_UTILS_TEST_DISABLED_ON_WIN32(LogTopics))
   transport::log::Playback player(statePath);
   const int64_t addTopicResult = player.AddTopic(std::regex(".*"));
 
-  // There should be 3 topics (clock, sdf, & state)
-  EXPECT_EQ(3, addTopicResult);
+  // There should be 4 topics, with the clock topic.
+  EXPECT_EQ(4, addTopicResult);
 
   int clockMsgCount = 0;
   std::function<void(const msgs::Clock &)> clockCb =

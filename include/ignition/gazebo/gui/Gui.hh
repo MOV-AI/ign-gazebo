@@ -41,10 +41,8 @@ namespace gui
   /// ign-tools. Set to the name of the application if using ign-tools)
   /// \param[in] _guiConfig The GUI configuration file. If nullptr, the default
   /// configuration from IGN_HOMEDIR/.ignition/gazebo/gui.config will be used.
-  /// \param[in] _renderEngineGui --render-engine-gui option
-  /// \return -1 on failure, 0 on success
-  IGNITION_GAZEBO_GUI_VISIBLE int runGui(int &_argc,
-    char **_argv, const char *_guiConfig, const char * _renderEngine = nullptr);
+  IGNITION_GAZEBO_GUI_VISIBLE int runGui(int &_argc, char **_argv,
+                                     const char *_guiConfig);
 
   /// \brief Create a Gazebo GUI application
   /// \param[in] _argc Number of command line arguments (Used when running
@@ -62,13 +60,10 @@ namespace gui
   /// IGN_HOMEDIR/.ignition/gazebo/gui.config will be used.
   /// \param[in] _loadPluginsFromSdf If true, plugins specified in the world
   /// SDFormat file will get loaded.
-  /// \param[in] _renderEngineGui --render-engine-gui option
-  /// \return Newly created application.
   IGNITION_GAZEBO_GUI_VISIBLE
   std::unique_ptr<ignition::gui::Application> createGui(
       int &_argc, char **_argv, const char *_guiConfig,
-      const char *_defaultGuiConfig = nullptr, bool _loadPluginsFromSdf = true,
-      const char *_renderEngine = nullptr);
+      const char *_defaultGuiConfig = nullptr, bool _loadPluginsFromSdf = true);
 
 }  // namespace gui
 }  // namespace IGNITION_GAZEBO_VERSION_NAMESPACE
